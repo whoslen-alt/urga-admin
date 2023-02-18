@@ -1,15 +1,16 @@
 import { useState } from 'react';
-import NextApp, { AppProps, AppContext } from 'next/app';
+import NextApp from 'next/app';
 import { getCookie, setCookie } from 'cookies-next';
 import Head from 'next/head';
-import { MantineProvider, ColorScheme, ColorSchemeProvider } from '@mantine/core';
+import { MantineProvider, ColorSchemeProvider } from '@mantine/core';
 import { NotificationsProvider } from '@mantine/notifications';
+import Auth from '../components/HOCs/Auth';
 
-export default function App(props: AppProps & { colorScheme: ColorScheme }) {
+export default function App(props) {
   const { Component, pageProps } = props;
-  const [colorScheme, setColorScheme] = useState<ColorScheme>(props.colorScheme);
+  const [colorScheme, setColorScheme] = useState(props.colorScheme);
 
-  const toggleColorScheme = (value?: ColorScheme) => {
+  const toggleColorScheme = (value) => {
     const nextColorScheme = value || (colorScheme === 'dark' ? 'light' : 'dark');
     setColorScheme(nextColorScheme);
     setCookie('mantine-color-scheme', nextColorScheme, { maxAge: 60 * 60 * 24 * 30 });
@@ -24,9 +25,15 @@ export default function App(props: AppProps & { colorScheme: ColorScheme }) {
       </Head>
 
       <ColorSchemeProvider colorScheme={colorScheme} toggleColorScheme={toggleColorScheme}>
-        <MantineProvider theme={{ colorScheme }} withGlobalStyles withNormalizeCSS>
+        <MantineProvider
+          theme={{ colorScheme, focusRing: 'always' }}
+          withGlobalStyles
+          withNormalizeCSS
+        >
           <NotificationsProvider>
+            {/* <Auth> */}
             <Component {...pageProps} />
+            {/* </Auth> */}
           </NotificationsProvider>
         </MantineProvider>
       </ColorSchemeProvider>
@@ -34,7 +41,7 @@ export default function App(props: AppProps & { colorScheme: ColorScheme }) {
   );
 }
 
-App.getInitialProps = async (appContext: AppContext) => {
+App.getInitialProps = async (appContext) => {
   const appProps = await NextApp.getInitialProps(appContext);
   return {
     ...appProps,
