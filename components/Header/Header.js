@@ -33,13 +33,13 @@ function Header({ setOpen, isOpen }) {
             mr="xl"
           />
         </MediaQuery>
-        <Flex align="center" gap={16}>
+        <Flex align="center" gap={30}>
           <Box sx={{ marginLeft: 10 }}>
             <Link href="/">
               <Image src={'/logo.png'} height={40} width={40} />
             </Link>
           </Box>
-          <Text>Application header</Text>
+          <Text weight="lighter">Таримал Ургамал ХХК</Text>
         </Flex>
         <ColorSchemeToggle />
       </div>
