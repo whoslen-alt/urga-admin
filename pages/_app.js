@@ -3,6 +3,8 @@ import NextApp from 'next/app';
 import { getCookie, setCookie } from 'cookies-next';
 import Head from 'next/head';
 import { MantineProvider, ColorSchemeProvider } from '@mantine/core';
+import { ModalsProvider } from '@mantine/modals';
+
 import { NotificationsProvider } from '@mantine/notifications';
 import Auth from '../components/HOCs/Auth';
 
@@ -30,11 +32,15 @@ export default function App(props) {
           withGlobalStyles
           withNormalizeCSS
         >
-          <NotificationsProvider>
-            {/* <Auth> */}
-            <Component {...pageProps} />
-            {/* </Auth> */}
-          </NotificationsProvider>
+          {' '}
+          <ModalsProvider>
+            <NotificationsProvider>
+              {/* <Auth> */}
+
+              <Component {...pageProps} />
+              {/* </Auth> */}
+            </NotificationsProvider>
+          </ModalsProvider>
         </MantineProvider>
       </ColorSchemeProvider>
     </>

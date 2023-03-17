@@ -101,7 +101,13 @@ function Category({ categories }) {
                         <Text size="sm">Дэд ангилалууд</Text>
                         <Text size="sm">Нийт: {parentCategory.child_categories.length}</Text>
                       </Group>
-                      <Flex justify="flex-start" align="flex-start" direction="row" wrap="wrap">
+                      <Flex
+                        justify="flex-start"
+                        align="flex-start"
+                        direction="row"
+                        wrap="wrap"
+                        gap="xs"
+                      >
                         {parentCategory.child_categories.map((childCategory) => (
                           <Badge
                             variant="light"
