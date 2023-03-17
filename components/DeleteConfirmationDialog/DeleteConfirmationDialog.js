@@ -3,7 +3,7 @@ export function DeleteConfirmationDialog({
   isOpen,
   close,
   confirmationText,
-  productData = {},
+  thingToDelete = {},
   onConfirm,
   loading,
 }) {
@@ -17,7 +17,7 @@ export function DeleteConfirmationDialog({
             {...form.getInputProps('name')}
           /> */}
       <Text size="sm" weight={500} p="xs">
-        {productData?.name}
+        {thingToDelete?.name}
       </Text>
       <Group position="right" mt="xl">
         <Button variant="default" radius="xl" onClick={close}>
@@ -27,7 +27,7 @@ export function DeleteConfirmationDialog({
           type="submit"
           radius="xl"
           loading={loading}
-          onClick={(e) => onConfirm(productData?.id)}
+          onClick={(e) => onConfirm(thingToDelete?.id)}
           color="red"
         >
           Идэвхигүй болгох

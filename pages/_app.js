@@ -5,7 +5,7 @@ import Head from 'next/head';
 import { MantineProvider, ColorSchemeProvider } from '@mantine/core';
 import { ModalsProvider } from '@mantine/modals';
 
-import { NotificationsProvider } from '@mantine/notifications';
+import { Notifications } from '@mantine/notifications';
 import Auth from '../components/HOCs/Auth';
 
 export default function App(props) {
@@ -34,12 +34,10 @@ export default function App(props) {
         >
           {' '}
           <ModalsProvider>
-            <NotificationsProvider>
-              {/* <Auth> */}
-
-              <Component {...pageProps} />
-              {/* </Auth> */}
-            </NotificationsProvider>
+            <Notifications />
+            {/* <Auth> */}
+            <Component {...pageProps} />
+            {/* </Auth> */}
           </ModalsProvider>
         </MantineProvider>
       </ColorSchemeProvider>

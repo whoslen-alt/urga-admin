@@ -44,7 +44,7 @@ const PAGE_SIZE = 15;
 function Product({ products, total, mainCategories, parentCategories, childCategories }) {
   const [selectedRecords, setSelectedRecords] = useState([]);
   const [page, setPage] = useState(1);
-  const [records, setRecords] = useState(products);
+  const [records, setRecords] = useState();
   const [loading, setLoading] = useState(false);
   const [updating, setUpdating] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -52,6 +52,11 @@ function Product({ products, total, mainCategories, parentCategories, childCateg
   const [opened, { open, close }] = useDisclosure(false);
   const [confirmationOpened, handlers] = useDisclosure(false);
   const [editingProdData, setEditingProdData] = useState();
+
+  useEffect(() => {
+    setRecords(products);
+  }, []);
+
   const fetchPage = async (pageNumber) => {
     setLoading(true);
     const offset = pageNumber * PAGE_SIZE;
@@ -231,7 +236,7 @@ function Product({ products, total, mainCategories, parentCategories, childCateg
           isOpen={confirmationOpened}
           close={handlers.close}
           confirmationText="Барааг идэвхигүй болгох уу?"
-          productData={deletingProduct}
+          thingToDelete={deletingProduct}
           onConfirm={deleteProduct}
           loading={deleting}
         />
