@@ -9,10 +9,12 @@ import {
   Group,
   ActionIcon,
   Stack,
+  Grid,
   Center,
   TextInput,
   Button,
   Menu,
+  Flex,
 } from '@mantine/core';
 import { DataTable } from 'mantine-datatable';
 import { useState, useEffect } from 'react';
@@ -248,19 +250,21 @@ function Product({ products, total, mainCategories, parentCategories, childCateg
           onSubmit={editingProdData?.create ? createProduct : updateProduct}
           categories={{ mainCategories, parentCategories, childCategories }}
         />
-        <Group position="apart" grow>
-          <Text size="lg" weight={500}>
-            Бараанууд
-          </Text>
-          <Group position="apart" noWrap>
+        <Grid position="apart" grow>
+          <Grid.Col span={4}>
+            <Text size="lg" weight={500}>
+              Бараанууд
+            </Text>
+          </Grid.Col>
+          <Grid.Col span={4}>
             <TextInput
-              placeholder="Бараа хайх"
+              placeholder="Ангилал хайх"
               rightSection={<IconSearch size="1rem" />}
               radius="xl"
               styles={{ root: { flexGrow: 2 } }}
             />
-            {/* <Menu shadow="md" withArrow>
-              <Menu.Target> */}
+          </Grid.Col>
+          <Grid.Col span={1}>
             <Button
               variant="filled"
               radius="xl"
@@ -268,23 +272,12 @@ function Product({ products, total, mainCategories, parentCategories, childCateg
               onClick={(e) => {
                 e.preventDefault();
                 openProductEditingModal({}, 'creation');
-                // editInfo(company);
               }}
             >
               Бараа Үүсгэх
             </Button>
-            {/* </Menu.Target>
-
-              <Menu.Dropdown>
-                <Menu.Label>Ямар ангилал үүсгэх вэ?</Menu.Label>
-                <Menu.Item onClick={() => useCategoryModal('general')}>Ерөнхий ангилал</Menu.Item>
-                <Menu.Item onClick={() => useCategoryModal('parent')}>Дэд ангилал</Menu.Item>
-                <Menu.Item onClick={() => useCategoryModal('product')}>Барааны ангилал</Menu.Item>
-              </Menu.Dropdown>
-            </Menu> */}
-          </Group>
-        </Group>
-
+          </Grid.Col>
+        </Grid>
         <Box sx={{ height: '100%' }}>
           <DataTable
             mt="lg"
@@ -337,7 +330,7 @@ function Product({ products, total, mainCategories, parentCategories, childCateg
                 width: 85,
                 render: (r) => (
                   <Text>
-                    {r.instock} {r.unit}
+                    {r.instock ? r.instock : 0} {r.unit}
                   </Text>
                 ),
               },
@@ -346,12 +339,16 @@ function Product({ products, total, mainCategories, parentCategories, childCateg
                 title: 'Нэгж үнэ (₮)',
                 textAlignment: 'center',
                 width: 95,
-                // render: (r) => <Text>{Intl.NumberFormat().formatToParts(r.price)}</Text>,
+                render: ({ price }) => <Text>{Intl.NumberFormat().format(price)}</Text>,
               },
 
               { accessor: 'note', title: 'Тэмдэглэл' },
 
-              { accessor: 'description', title: 'Тайлбар' },
+              {
+                accessor: 'description',
+                title: 'Тайлбар',
+                render: ({ description }) => <Text lineClamp={5}>{description}</Text>,
+              },
               { accessor: 'detailed_description', title: 'Дэлгэрэнгүй тайлбар' },
               {
                 accessor: 'active',

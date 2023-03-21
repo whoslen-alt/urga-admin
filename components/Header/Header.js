@@ -36,7 +36,7 @@ function Header({ setOpen, isOpen }) {
         <Flex align="center" gap={30}>
           <Box sx={{ marginLeft: 10 }}>
             <Link href="/">
-              <Image src={'/logo.png'} height={40} width={40} />
+              <Image src={'/logo.png'} height={40} width={40} alt="logo" />
             </Link>
           </Box>
           <Text weight="lighter">Таримал Ургамал ХХК</Text>

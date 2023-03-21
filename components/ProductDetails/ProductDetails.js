@@ -63,7 +63,7 @@ function ProductDetails({ initialData, categories }) {
         <Group spacing={6}>
           <Text weight={500}>Савлагаа:</Text>
           <Text>
-            {initialData.packaging} {initialData.unit}
+            {initialData.packaging ? initialData.packaging + initialData.unit : 'Байхгүй'}
           </Text>
         </Group>
         <Group spacing={6}>
@@ -81,6 +81,14 @@ function ProductDetails({ initialData, categories }) {
           <Text>{initialData.wholesale_qty ? initialData.wholesale_qty : 'Байхгүй'}</Text>
         </Group>
       </Stack>
+      {initialData.description === null ? (
+        <></>
+      ) : (
+        <Group spacing={6} p="xs">
+          <Text weight={500}>Тайлбар:</Text>
+          <Text>{initialData?.description}</Text>
+        </Group>
+      )}
     </Group>
   );
 }

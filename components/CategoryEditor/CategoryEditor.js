@@ -61,7 +61,7 @@ function CategoryEditor({ initialData, type, categories, collapse, onSubmit }) {
             <Grid.Col span={8}>
               <TextInput label="Ангиллын нэр" size="xs" {...form.getInputProps('name')} />
             </Grid.Col>
-            {/* <Grid.Col span={12}>
+            <Grid.Col span={12}>
               <MultiSelect
                 label="Дэд ангиллууд"
                 size="xs"
@@ -71,7 +71,7 @@ function CategoryEditor({ initialData, type, categories, collapse, onSubmit }) {
                 })}
                 {...form.getInputProps('parent_cat_id')}
               />
-            </Grid.Col> */}
+            </Grid.Col>
             <Grid.Col span={4}>
               <Select
                 size="xs"
