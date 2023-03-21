@@ -1,57 +1,27 @@
 import {
   Container,
-  Title,
-  Tabs,
   Box,
-  MediaQuery,
   Badge,
   Text,
   Group,
   ActionIcon,
   Stack,
-  Center,
   TextInput,
   Button,
-  Menu,
   Flex,
-  Col,
   Grid,
   CopyButton,
   Tooltip,
   Popover,
-  Input,
-  Select,
-  Indicator,
   Radio,
 } from '@mantine/core';
 import { DataTable } from 'mantine-datatable';
 import { useState, useEffect, useMemo } from 'react';
 import DefaultLayout from '../../components/Layouts/DefaultLayout';
-import {
-  IconBox,
-  IconCalendar,
-  IconCalendarStats,
-  IconCalendarTime,
-  IconCheck,
-  IconCopy,
-  IconEdit,
-  IconEye,
-  IconPackage,
-  IconPhoto,
-  IconPhotoOff,
-  IconPlus,
-  IconSearch,
-  IconTrash,
-  IconUsers,
-  IconX,
-} from '@tabler/icons';
+import { IconCalendarTime, IconCheck, IconCopy, IconEye, IconSearch } from '@tabler/icons';
 import axios from 'axios';
-import ProductDetails from '../../components/ProductDetails/ProductDetails';
-import { useColorScheme, useDisclosure } from '@mantine/hooks';
-import ProductModal from '../../components/ProductModal/ProductModal';
+import { useDisclosure } from '@mantine/hooks';
 import Image from 'next/image';
-import { modals } from '@mantine/modals';
-import { DeleteConfirmationDialog } from '../../components/DeleteConfirmationDialog/DeleteConfirmationDialog';
 import { showNotification } from '@mantine/notifications';
 import { DatesProvider, DatePickerInput, Calendar } from '@mantine/dates';
 import 'dayjs/locale/mn';
@@ -64,13 +34,10 @@ const PAGE_SIZE = 15;
 const dateFormat = 'YYYY-MM-DD';
 
 function Order({ orders, total }) {
-  const [selectedRecords, setSelectedRecords] = useState([]);
-  const [page, setPage] = useState(1);
+  const [initialRecords, setInitialRecords] = useState();
   const [records, setRecords] = useState();
   const [loading, setLoading] = useState(false);
   const [updating, setUpdating] = useState(false);
-  const [deleting, setDeleting] = useState(false);
-  const [opened, { open, close }] = useDisclosure(false);
   const [popovers, setPopovers] = useState(
     orders.map((e) => {
       return {
@@ -79,7 +46,6 @@ function Order({ orders, total }) {
       };
     })
   );
-  const [confirmationOpened, handlers] = useDisclosure(false);
   const [dates, setDates] = useState([dayjs().subtract(7, 'days'), dayjs()]);
   const [expandedRecordIds, setExpandedRecordIds] = useState([]);
   const orderStatuses = useMemo(() => orderStatus, []);
@@ -93,15 +59,34 @@ function Order({ orders, total }) {
   });
   useEffect(() => {
     setRecords(orders);
+    setInitialRecords(orders);
   }, []);
+
   useEffect(() => {
-    // setDates(dates);
     fetchPage();
   }, [dates]);
-
+  const handleSearch = (query) => {
+    if (query.length === 0) {
+      setRecords(initialRecords);
+    } else {
+      setRecords(
+        initialRecords.filter(
+          (e) =>
+            e.orderid.toString().toLowerCase().includes(query) ||
+            e.user?.given_name?.toString().toLowerCase().includes(query) ||
+            e.user?.mobile?.toString().includes(query)
+        )
+      );
+    }
+  };
   const updateOrderStatus = async (orderId, initialStatus, orderStatus) => {
     const title = 'Захиалгын төлөв шинэчлэлт';
+    const currentPopovers = [...popovers];
+    const updatedOrderPopover = currentPopovers.find((element) => element.id === orderId);
+    updatedOrderPopover.isOpen = false;
+
     if (initialStatus.toString() === orderStatus) {
+      setPopovers(currentPopovers);
       return;
     }
     setUpdating(true);
@@ -124,10 +109,6 @@ function Order({ orders, total }) {
         });
 
         await fetchPage();
-
-        const currentPopovers = [...popovers];
-        const updatedOrderPopover = currentPopovers.find((element) => element.id === orderId);
-        updatedOrderPopover.isOpen = false;
         setPopovers(currentPopovers);
       } else {
         showNotification({
@@ -147,14 +128,10 @@ function Order({ orders, total }) {
   };
   const fetchPage = async () => {
     setLoading(true);
-    const initialDates = [dates[0], dates[1]];
     const res = await axios.get(
-      // `${process.env.NEXT_PUBLIC_API}/admin/order/local?fromDate=${initialDates[0].format(
-      //   dateFormat
-      // )}&untilDate=${initialDates[1].format(dateFormat)}`,
-      `${process.env.NEXT_PUBLIC_API}/admin/order/local?fromDate=2022-12-30&untilDate=${dayjs(
-        initialDates[1]
-      ).format(dateFormat)}`,
+      `${process.env.NEXT_PUBLIC_API}/admin/order/local?fromDate=${dayjs(dates?.[0]).format(
+        dateFormat
+      )}&untilDate=${dayjs(dates?.[1]).format(dateFormat)}`,
       {
         headers: {
           Authorization: `Bearer ${'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyaWQiOiIxYWVmYmM4ZDZhMGY2ODc3YjJiMjU2YWIwODEwY2VjMDdlZGM0YzdkOGE4NTFhY2U3MDQ2NjdlZjQyMjc1NGFkIiwicm9sZWlkIjoxMDAsImlhdCI6MTY3OTI0MTc3NCwiZXhwIjoxNjc5ODQ2NTc0fQ.LijO3-6xPvDAhyeW73oh5ecuAWVhz9gytwBFLvm6UXY'}`,
@@ -168,14 +145,6 @@ function Order({ orders, total }) {
   return (
     <DefaultLayout>
       <Container fluid mx="xs" sx={{ maxHeight: '100%' }}>
-        <DeleteConfirmationDialog
-          isOpen={confirmationOpened}
-          close={handlers.close}
-          confirmationText="Захиалгыг идэвхигүй болгох уу?"
-          // productData={deletingProduct}
-          // onConfirm={deleteProduct}
-          loading={deleting}
-        />
         <Grid columns={24} position="apart" grow>
           <Grid.Col span={8}>
             <Text size="lg" weight={500}>
@@ -197,7 +166,7 @@ function Order({ orders, total }) {
                     fontSize: 13,
                   },
                 })}
-                placeholder="Захиалгын огноог сонгоно уу"
+                placeholder="Огноо сонгоно уу"
                 radius="xl"
                 valueFormat="YYYY-MM-DD"
                 value={dates}
@@ -208,14 +177,14 @@ function Order({ orders, total }) {
           </Grid.Col>
           <Grid.Col span={6}>
             <TextInput
-              placeholder="Захиалга хайх"
+              placeholder="Захиалга хайх... (Захиалгын дугаар, Захиалагч, Холбогдох утас)"
               rightSection={<IconSearch size="1rem" />}
               radius="xl"
               styles={{ root: { flexGrow: 2 } }}
+              onChange={(e) => handleSearch(e.target.value.toLowerCase())}
             />
           </Grid.Col>
         </Grid>
-
         <Box sx={{ height: 400 }}>
           <DataTable
             mt="lg"
@@ -225,14 +194,11 @@ function Order({ orders, total }) {
             withColumnBorders
             highlightOnHover
             records={records}
-            // selectedRecords={selectedRecords}
-            // onSelectedRecordsChange={setSelectedRecords}
             totalRecords={total}
             recordsPerPage={PAGE_SIZE}
-            page={page}
             fetching={loading}
-            // onPageChange={(p) => fetchPage(p)}
             idAccessor="orderid"
+            noRecordsText="Захиалга олдсонгүй"
             rowExpansion={{
               trigger: 'never',
               expanded: {
@@ -272,7 +238,6 @@ function Order({ orders, total }) {
                   </Flex>
                 ),
               },
-
               {
                 accessor: 'full_name',
                 title: 'Захиалагч',
@@ -332,7 +297,7 @@ function Order({ orders, total }) {
                 textAlignment: 'center',
                 render: ({ status, orderid }) => (
                   <Group position="center" spacing={4} noWrap>
-                    <Tooltip label="Захиалсан бараа харах" withArrow>
+                    <Tooltip label="Захиалгын дэлгэрэнгүйг харах" withArrow>
                       <ActionIcon
                         color="blue"
                         onClick={(e) => {
@@ -428,6 +393,7 @@ function Order({ orders, total }) {
     </DefaultLayout>
   );
 }
+
 export async function getServerSideProps() {
   const dateFormat = 'YYYY-MM-DD';
   const initialDates = [dayjs().subtract(7, 'days'), dayjs()];

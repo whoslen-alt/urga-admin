@@ -277,6 +277,7 @@ function Category({ mainCats, parentCats, childCats }) {
                 recordsPerPage={PAGE_SIZE}
                 page={mainCatPageNumber}
                 onPageChange={(p) => setMainCatPageNumber(p)}
+                noRecordsText="Ангилал олдсонгүй"
                 rowExpansion={{
                   trigger: 'never',
                   expanded: {
@@ -502,6 +503,7 @@ function Category({ mainCats, parentCats, childCats }) {
                 recordsPerPage={PAGE_SIZE}
                 page={childCatPageNumber}
                 onPageChange={(p) => setChildCatPageNumber(p)}
+                noRecordsText="Ангилал олдсонгүй"
                 // rowExpansion={{
                 //   content: ({ record }) => (
                 //     <ProductDetails

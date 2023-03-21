@@ -32,6 +32,7 @@ function User() {
                 withColumnBorders
                 highlightOnHover
                 shadow={false}
+                noRecordsText="Хэрэглэгч олдсонгүй"
                 columns={[
                   { accessor: 'fullname', title: 'Овог нэр' },
                   { accessor: 'role', title: 'Эрх' },

@@ -46,6 +46,7 @@ const PAGE_SIZE = 15;
 function Product({ products, total, mainCategories, parentCategories, childCategories }) {
   const [selectedRecords, setSelectedRecords] = useState([]);
   const [page, setPage] = useState(1);
+  const [initialRecords, setInitalRecords] = useState();
   const [records, setRecords] = useState();
   const [loading, setLoading] = useState(false);
   const [updating, setUpdating] = useState(false);
@@ -56,15 +57,15 @@ function Product({ products, total, mainCategories, parentCategories, childCateg
   const [editingProdData, setEditingProdData] = useState();
 
   useEffect(() => {
+    setInitalRecords(products);
+    console.log(products);
     setRecords(products);
   }, []);
 
   const fetchPage = async (pageNumber) => {
     setLoading(true);
-    const offset = pageNumber * PAGE_SIZE;
-    const res = await axios(
-      `${process.env.NEXT_PUBLIC_API}/product/local/admin?offset=${offset}&limit=${PAGE_SIZE}`
-    );
+    // const offset = pageNumber * PAGE_SIZE;
+    const res = await axios(`${process.env.NEXT_PUBLIC_API}/product/local/admin`);
     setRecords(res.data.data);
     setPage(pageNumber);
     setLoading(false);
@@ -230,7 +231,13 @@ function Product({ products, total, mainCategories, parentCategories, childCateg
     setDeletingProduct({ id: productId, name: productName });
     handlers.open();
   };
-
+  const handleSearch = (query) => {
+    if (query.length === 0) {
+      setRecords(initialRecords);
+    } else {
+      setRecords(initialRecords.filter((e) => e.name.toString().toLowerCase().includes(query)));
+    }
+  };
   return (
     <DefaultLayout>
       <Container fluid mx="xs" sx={{ maxHeight: '100%' }}>
@@ -248,7 +255,7 @@ function Product({ products, total, mainCategories, parentCategories, childCateg
           close={close}
           loading={updating}
           onSubmit={editingProdData?.create ? createProduct : updateProduct}
-          categories={{ mainCategories, parentCategories, childCategories }}
+          categories={{ mainCategories: [], parentCategories: [], childCategories: [] }}
         />
         <Grid position="apart" grow>
           <Grid.Col span={4}>
@@ -258,10 +265,11 @@ function Product({ products, total, mainCategories, parentCategories, childCateg
           </Grid.Col>
           <Grid.Col span={4}>
             <TextInput
-              placeholder="Ангилал хайх"
+              placeholder="Бараа хайх... (Нэр)"
               rightSection={<IconSearch size="1rem" />}
               radius="xl"
               styles={{ root: { flexGrow: 2 } }}
+              onChange={(e) => handleSearch(e.target.value.toLowerCase())}
             />
           </Grid.Col>
           <Grid.Col span={1}>
@@ -294,11 +302,12 @@ function Product({ products, total, mainCategories, parentCategories, childCateg
             page={page}
             fetching={loading}
             onPageChange={(p) => fetchPage(p)}
+            noRecordsText="Бараа олдсонгүй"
             rowExpansion={{
               content: ({ record }) => (
                 <ProductDetails
                   initialData={record}
-                  categories={{ mainCategories, parentCategories, childCategories }}
+                  categories={{ mainCategories: [], parentCategories: [], childCategories: [] }}
                 />
               ),
             }}
@@ -309,7 +318,7 @@ function Product({ products, total, mainCategories, parentCategories, childCateg
                 width: 100,
                 render: (r) =>
                   r.product_image ? (
-                    <Image src={r.product_image} alt="Зураг" height={100} width={100} />
+                    <Image src={(r.product_image ??= null)} alt="Зураг" height={100} width={100} />
                   ) : (
                     <Center>
                       <IconPhotoOff color="gray" />
@@ -411,31 +420,33 @@ function Product({ products, total, mainCategories, parentCategories, childCateg
   );
 }
 export async function getServerSideProps() {
-  const res = await axios(
-    `${process.env.NEXT_PUBLIC_API}/product/local/admin?offset=0&limit=${PAGE_SIZE}`
-  );
-  const mainCats = await axios.get(`${process.env.NEXT_PUBLIC_API}/admin/category/main`, {
+  const res = await axios.get(`${process.env.NEXT_PUBLIC_API}/product/local/admin`, {
     headers: {
       Authorization: `Bearer ${'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyaWQiOiI3NTkzNTBlMWYzMmVmODM1ZjRkMDhjYjI5MzllOWZjOThkZDRhMDdhZDFiMzhjMjcyNmE3ZmQxMjBjOWU4NzQ5Iiwicm9sZWlkIjozMywiaWF0IjoxNjc3MzE3MTQ1LCJleHAiOjE2Nzc5MjE5NDV9.rlnMXx48AF25X58C1t2AYCEwHAXlHq1vVsvDb773q2c'}`,
     },
   });
-  const parentCats = await axios.get(`${process.env.NEXT_PUBLIC_API}/admin/category/parent`, {
-    headers: {
-      Authorization: `Bearer ${'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyaWQiOiI3NTkzNTBlMWYzMmVmODM1ZjRkMDhjYjI5MzllOWZjOThkZDRhMDdhZDFiMzhjMjcyNmE3ZmQxMjBjOWU4NzQ5Iiwicm9sZWlkIjozMywiaWF0IjoxNjc3MzE3MTQ1LCJleHAiOjE2Nzc5MjE5NDV9.rlnMXx48AF25X58C1t2AYCEwHAXlHq1vVsvDb773q2c'}`,
-    },
-  });
-  const childCats = await axios.get(`${process.env.NEXT_PUBLIC_API}/admin/category/child`, {
-    headers: {
-      Authorization: `Bearer ${'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyaWQiOiI3NTkzNTBlMWYzMmVmODM1ZjRkMDhjYjI5MzllOWZjOThkZDRhMDdhZDFiMzhjMjcyNmE3ZmQxMjBjOWU4NzQ5Iiwicm9sZWlkIjozMywiaWF0IjoxNjc3MzE3MTQ1LCJleHAiOjE2Nzc5MjE5NDV9.rlnMXx48AF25X58C1t2AYCEwHAXlHq1vVsvDb773q2c'}`,
-    },
-  });
+  // const mainCats = await axios.get(`${process.env.NEXT_PUBLIC_API}/admin/category/main`, {
+  //   headers: {
+  //     Authorization: `Bearer ${'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyaWQiOiI3NTkzNTBlMWYzMmVmODM1ZjRkMDhjYjI5MzllOWZjOThkZDRhMDdhZDFiMzhjMjcyNmE3ZmQxMjBjOWU4NzQ5Iiwicm9sZWlkIjozMywiaWF0IjoxNjc3MzE3MTQ1LCJleHAiOjE2Nzc5MjE5NDV9.rlnMXx48AF25X58C1t2AYCEwHAXlHq1vVsvDb773q2c'}`,
+  //   },
+  // });
+  // const parentCats = await axios.get(`${process.env.NEXT_PUBLIC_API}/admin/category/parent`, {
+  //   headers: {
+  //     Authorization: `Bearer ${'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyaWQiOiI3NTkzNTBlMWYzMmVmODM1ZjRkMDhjYjI5MzllOWZjOThkZDRhMDdhZDFiMzhjMjcyNmE3ZmQxMjBjOWU4NzQ5Iiwicm9sZWlkIjozMywiaWF0IjoxNjc3MzE3MTQ1LCJleHAiOjE2Nzc5MjE5NDV9.rlnMXx48AF25X58C1t2AYCEwHAXlHq1vVsvDb773q2c'}`,
+  //   },
+  // });
+  // const childCats = await axios.get(`${process.env.NEXT_PUBLIC_API}/admin/category/child`, {
+  //   headers: {
+  //     Authorization: `Bearer ${'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyaWQiOiI3NTkzNTBlMWYzMmVmODM1ZjRkMDhjYjI5MzllOWZjOThkZDRhMDdhZDFiMzhjMjcyNmE3ZmQxMjBjOWU4NzQ5Iiwicm9sZWlkIjozMywiaWF0IjoxNjc3MzE3MTQ1LCJleHAiOjE2Nzc5MjE5NDV9.rlnMXx48AF25X58C1t2AYCEwHAXlHq1vVsvDb773q2c'}`,
+  //   },
+  // });
 
   return {
     props: {
       products: res.data.data,
-      mainCategories: mainCats.data.data,
-      parentCategories: parentCats.data.data,
-      childCategories: childCats.data.data,
+      // mainCategories: mainCats.data.data,
+      // parentCategories: parentCats.data.data,
+      // childCategories: childCats.data.data,
       total: res.data.total,
     },
   };

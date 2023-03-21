@@ -42,6 +42,9 @@ function ProductModal({ initialData, isOpen, close, categories, onSubmit, loadin
   });
   useEffect(() => {
     form.setValues(initialData);
+    return () => {
+      form.reset();
+    };
   }, [initialData]);
 
   return (
