@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import {
   AppShell,
   Navbar,
@@ -12,7 +11,14 @@ import {
 import NavigationBar from '../components/NavigationBar/NavigationBar';
 import Header from '../components/Header/Header';
 import DefaultLayout from '../components/Layouts/DefaultLayout';
+import { getCookie, getCookies } from 'cookies-next';
+import requireAuthentication from '../lib/requireAuthentication';
 
 export default function App() {
   return <DefaultLayout>as</DefaultLayout>;
 }
+export const getServerSideProps = requireAuthentication(async ({ req, res }) => {
+  return {
+    props: {},
+  };
+});

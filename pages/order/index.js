@@ -29,6 +29,7 @@ import dayjs from 'dayjs';
 import OrderProductsDetail from '../../components/OrderProductsDetail/OrderProductsDetail';
 import { orderStatus } from '../../lib/constants/order_status';
 import { isNotEmpty, useForm } from '@mantine/form';
+import requireAuthentication from '../../lib/requireAuthentication';
 
 const PAGE_SIZE = 15;
 const dateFormat = 'YYYY-MM-DD';
@@ -394,26 +395,26 @@ function Order({ orders, total }) {
   );
 }
 
-export async function getServerSideProps() {
+export const getServerSideProps = requireAuthentication(async ({ req, res }) => {
   const dateFormat = 'YYYY-MM-DD';
   const initialDates = [dayjs().subtract(7, 'days'), dayjs()];
-  const res = await axios.get(
+  const response = await axios.get(
     `${process.env.NEXT_PUBLIC_API}/admin/order/local?fromDate=${initialDates[0].format(
       dateFormat
     )}&untilDate=${initialDates[1].format(dateFormat)}`,
     {
       headers: {
-        Authorization: `Bearer ${'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyaWQiOiIxYWVmYmM4ZDZhMGY2ODc3YjJiMjU2YWIwODEwY2VjMDdlZGM0YzdkOGE4NTFhY2U3MDQ2NjdlZjQyMjc1NGFkIiwicm9sZWlkIjoxMDAsImlhdCI6MTY3OTI0MTc3NCwiZXhwIjoxNjc5ODQ2NTc0fQ.LijO3-6xPvDAhyeW73oh5ecuAWVhz9gytwBFLvm6UXY'}`,
+        Authorization: `Bearer ${req.cookies.urga_admin_user_jwt}`,
       },
     }
   );
   return {
     props: {
-      orders: res.data.data,
+      orders: response.data.data,
       // total: res.data.total,
-      total: res.data.data.length,
+      total: response.data.data.length,
     },
   };
-}
+});
 
 export default Order;

@@ -4,14 +4,25 @@ import { useState } from 'react';
 import Image from 'next/image';
 import { MainLinks } from './MainLinks/MainLinks';
 import { IconLogout } from '@tabler/icons';
+import axios from 'axios';
+import { useRouter } from 'next/router';
 function NavigationBar({ isOpen }) {
+  const router = useRouter();
+  const handleLogout = async () => {
+    axios
+      .get('api/auth/logout')
+      .then((value) => {
+        router.reload();
+      })
+      .catch((err) => {});
+  };
   return (
     <Navbar p="sm" hiddenBreakpoint="sm" hidden={!isOpen} width={{ sm: 200, lg: 250 }}>
       <Navbar.Section grow mt="sm">
         <MainLinks />
       </Navbar.Section>
       <UnstyledButton
-        // onClick={handleLogout}
+        onClick={handleLogout}
         sx={(theme) => ({
           display: 'block',
           width: '100%',

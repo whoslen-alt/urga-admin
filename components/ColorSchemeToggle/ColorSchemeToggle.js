@@ -7,12 +7,12 @@ export function ColorSchemeToggle() {
   return (
     <Group position="center">
       <ActionIcon
-      radius="xl"
+        radius="xl"
         onClick={() => toggleColorScheme()}
         size="xl"
         sx={(theme) => ({
           backgroundColor:
-            theme.colorScheme === 'dark' ? theme.colors.dark[6] : theme.colors.gray[2],
+            theme.colorScheme === 'dark' ? theme.colors.dark[6] : theme.colors.gray[1],
           color: theme.colorScheme === 'dark' ? theme.colors.yellow[4] : theme.colors.blue[6],
         })}
       >

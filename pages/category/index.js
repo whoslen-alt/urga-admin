@@ -31,7 +31,7 @@ import { DeleteConfirmationDialog } from '../../components/DeleteConfirmationDia
 import { showNotification } from '@mantine/notifications';
 import axios from 'axios';
 import CategoryEditor from '../../components/CategoryEditor/CategoryEditor';
-
+import requireAuthentication from '../../lib/requireAuthentication';
 const PAGE_SIZE = 15;
 function Category({ mainCats, parentCats, childCats }) {
   const [activeTab, setActiveTab] = useState('main');
@@ -643,17 +643,21 @@ function Category({ mainCats, parentCats, childCats }) {
     </DefaultLayout>
   );
 }
-export async function getServerSideProps() {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API}/category/all?type=separate`);
-  const data = await res.json();
+
+export const getServerSideProps = requireAuthentication(async ({ req, res }) => {
+  const response = await axios.get(`${process.env.NEXT_PUBLIC_API}/category/all?type=separate`, {
+    headers: {
+      Authorization: `Bearer ${req.cookies.urga_admin_user_jwt}`,
+    },
+  });
 
   return {
     props: {
-      mainCats: data.data.mainCats,
-      parentCats: data.data.parentCats,
-      childCats: data.data.childCats,
+      mainCats: response.data.mainCats,
+      parentCats: response.data.parentCats,
+      childCats: response.data.childCats,
     },
   };
-}
+});
 
 export default Category;

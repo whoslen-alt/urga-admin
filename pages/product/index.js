@@ -40,6 +40,7 @@ import Image from 'next/image';
 import { modals } from '@mantine/modals';
 import { DeleteConfirmationDialog } from '../../components/DeleteConfirmationDialog/DeleteConfirmationDialog';
 import { showNotification } from '@mantine/notifications';
+import requireAuthentication from '../../lib/requireAuthentication';
 
 const PAGE_SIZE = 15;
 
@@ -418,11 +419,11 @@ function Product({ products, total, mainCategories, parentCategories, childCateg
       </Container>
     </DefaultLayout>
   );
-}
-export async function getServerSideProps() {
-  const res = await axios.get(`${process.env.NEXT_PUBLIC_API}/product/local/admin`, {
+} 
+export const getServerSideProps = requireAuthentication(async ({ req, res }) => {
+  const response = await axios.get(`${process.env.NEXT_PUBLIC_API}/product/local/admin`, {
     headers: {
-      Authorization: `Bearer ${'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyaWQiOiI3NTkzNTBlMWYzMmVmODM1ZjRkMDhjYjI5MzllOWZjOThkZDRhMDdhZDFiMzhjMjcyNmE3ZmQxMjBjOWU4NzQ5Iiwicm9sZWlkIjozMywiaWF0IjoxNjc3MzE3MTQ1LCJleHAiOjE2Nzc5MjE5NDV9.rlnMXx48AF25X58C1t2AYCEwHAXlHq1vVsvDb773q2c'}`,
+      Authorization: `Bearer ${req.cookies.urga_admin_user_jwt}`,
     },
   });
   // const mainCats = await axios.get(`${process.env.NEXT_PUBLIC_API}/admin/category/main`, {
@@ -443,13 +444,13 @@ export async function getServerSideProps() {
 
   return {
     props: {
-      products: res.data.data,
+      products: response.data.data,
       // mainCategories: mainCats.data.data,
       // parentCategories: parentCats.data.data,
       // childCategories: childCats.data.data,
-      total: res.data.total,
+      total: response.data.total,
     },
   };
-}
+});
 
 export default Product;
