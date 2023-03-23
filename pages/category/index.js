@@ -20,6 +20,8 @@ import {
   Modal,
   MultiSelect,
   Stack,
+  Select,
+  LoadingOverlay,
 } from '@mantine/core';
 import { DataTable } from 'mantine-datatable';
 import { useState, useEffect, useMemo } from 'react';
@@ -41,8 +43,19 @@ import { showNotification } from '@mantine/notifications';
 import axios from 'axios';
 import CategoryEditor from '../../components/CategoryEditor/CategoryEditor';
 import requireAuthentication from '../../lib/requireAuthentication';
+import { isNotEmpty, useForm } from '@mantine/form';
 const PAGE_SIZE = 15;
 function Category({ mainCats, parentCats, childCats, userToken }) {
+  const form = useForm({
+    initialValues: {
+      id: '',
+      name: '',
+      main_cat_id: '',
+    },
+    validate: {
+      name: isNotEmpty('Нэр оруулна уу'),
+    },
+  });
   const [activeTab, setActiveTab] = useState('main');
 
   const [mainCategories, setMainCategories] = useState([]);
@@ -263,7 +276,7 @@ function Category({ mainCats, parentCats, childCats, userToken }) {
     } catch (e) {
       showNotification({
         title,
-        message: e.message,
+        message: e.response.data.message,
         color: 'red',
       });
     }
@@ -479,93 +492,176 @@ function Category({ mainCats, parentCats, childCats, userToken }) {
                       lg={3}
                       key={`parent-key-${parentCategory.id}-${parentCategory.name}`}
                     >
-                      <Card withBorder shadow="sm" radius="md">
-                        <Card.Section withBorder p={15}>
-                          <Group position="apart" align="flex-start" grow>
-                            <Stack mih={50} spacing="sm">
-                              <Group position="apart" grow>
-                                {parents.map((e) => (
-                                  <Text
-                                    weight={500}
-                                    size="xs"
-                                    key={`parent-parents-key-${e.id}-${e.name}`}
-                                  >
-                                    {e.name}
-                                  </Text>
-                                ))}
-                                <Group spacing="sm" position="right">
-                                  <ActionIcon
-                                    variant="light"
-                                    radius="lg"
-                                    color={
-                                      beingEditedCategory === parentCategory.id ? 'green' : 'blue'
-                                    }
-                                    onClick={() => setBeingEditedCategory(parentCategory.id)}
-                                  >
-                                    {beingEditedCategory === parentCategory.id ? (
-                                      <IconCheck size={16} />
-                                    ) : (
+                      <Card
+                        withBorder
+                        shadow="sm"
+                        radius="md"
+                        style={
+                          beingEditedCategory && beingEditedCategory !== parentCategory.id
+                            ? { filter: 'blur(3px)' }
+                            : {}
+                        }
+                      >
+                        {beingEditedCategory === parentCategory.id ? (
+                          <form
+                            onSubmit={form.onSubmit((values) =>
+                              updating
+                                ? null
+                                : updateCategory(values).finally(() => setBeingEditedCategory(null))
+                            )}
+                          >
+                            <Stack pos="relative">
+                              <LoadingOverlay visible={updating} overlayBlur={2} />
+                              <TextInput
+                                label="Ангиллын нэр"
+                                placeholder="Засварлах ангиллын нэр оруулна уу"
+                                size="xs"
+                                {...form.getInputProps('name')}
+                              />
+                              <Select
+                                size="xs"
+                                label="Хамаарах ерөнхий ангилал"
+                                placeholder="Ерөнхий ангилал сонгоно уу"
+                                withinPortal
+                                data={mainCategories.map((e) => {
+                                  return { value: e.id.toString(), label: e.name };
+                                })}
+                                {...form.getInputProps('main_cat_id')}
+                              />
+                              <Stack mt={10} spacing={14}>
+                                <Group position="apart">
+                                  <Text size="sm">Хамаарах ангилалууд</Text>
+                                  <Text size="sm">Нийт: {children.length}</Text>
+                                </Group>
+                                <Flex
+                                  justify="flex-start"
+                                  align="flex-start"
+                                  direction="row"
+                                  wrap="wrap"
+                                  gap="xs"
+                                >
+                                  {children.map((childCategory) => (
+                                    <Badge
+                                      key={`parent-children-key-${childCategory.id}-${childCategory.name}`}
+                                      variant="light"
+                                      py={14}
+                                      px={10}
+                                      styles={{
+                                        inner: {
+                                          textTransform: 'capitalize',
+                                          fontWeight: 'normal',
+                                        },
+                                      }}
+                                    >
+                                      {childCategory.name}
+                                    </Badge>
+                                  ))}
+                                </Flex>
+                              </Stack>
+                              <Group spacing="sm" position="right">
+                                <Button
+                                  variant="subtle"
+                                  color="red"
+                                  onClick={
+                                    updating
+                                      ? null
+                                      : (e) => {
+                                          setBeingEditedCategory(null);
+                                        }
+                                  }
+                                >
+                                  Цуцлах
+                                </Button>
+                                <Button type="submit" variant="light">
+                                  Хадгалах
+                                </Button>
+                              </Group>
+                            </Stack>
+                          </form>
+                        ) : (
+                          <Card.Section withBorder p={15} variant="">
+                            <Group position="apart" align="flex-start" grow>
+                              <Stack mih={50} spacing="sm">
+                                <Group position="apart" grow>
+                                  {parents.map((e) => (
+                                    <Text
+                                      weight={500}
+                                      size="xs"
+                                      key={`parent-parents-key-${e.id}-${e.name}`}
+                                    >
+                                      {e.name}
+                                    </Text>
+                                  ))}
+                                  <Group spacing="sm" position="right">
+                                    <ActionIcon
+                                      variant="light"
+                                      radius="lg"
+                                      color="blue"
+                                      onClick={() => {
+                                        form.setValues({
+                                          id: parentCategory.id,
+                                          name: parentCategory.name,
+                                          main_cat_id: parentCategory.main_cat_id.toString(),
+                                        });
+                                        setBeingEditedCategory(parentCategory.id);
+                                      }}
+                                    >
                                       <IconEdit size={16} />
-                                    )}
-                                  </ActionIcon>
-                                  <ActionIcon
-                                    variant="light"
-                                    radius="lg"
-                                    color="red"
-                                    onClick={(e) => {
-                                      if (beingEditedCategory === parentCategory.id) {
-                                        setBeingEditedCategory(null);
-                                      } else {
+                                    </ActionIcon>
+                                    <ActionIcon
+                                      variant="light"
+                                      radius="lg"
+                                      color="red"
+                                      onClick={(e) => {
                                         openDeleteConfirmation(
                                           parentCategory.id,
                                           parentCategory.name
                                         );
-                                      }
-                                    }}
-                                  >
-                                    {beingEditedCategory === parentCategory.id ? (
-                                      <IconX size={16} />
-                                    ) : (
+                                      }}
+                                    >
                                       <IconTrash size={16} />
-                                    )}
-                                  </ActionIcon>
+                                    </ActionIcon>
+                                  </Group>
                                 </Group>
-                              </Group>
-
-                              <Group>
-                                <Indicator color="blue" />
-                                <Text weight="bold">{parentCategory.name}</Text>
-                              </Group>
-                            </Stack>
-                          </Group>
-                        </Card.Section>
-                        <Flex mt={10} gap={14} direction="column">
-                          <Group position="apart">
-                            <Text size="sm">Хамаарах ангилалууд</Text>
-                            <Text size="sm">Нийт: {children.length}</Text>
-                          </Group>
-                          <Flex
-                            justify="flex-start"
-                            align="flex-start"
-                            direction="row"
-                            wrap="wrap"
-                            gap="xs"
-                          >
-                            {children.map((childCategory) => (
-                              <Badge
-                                key={`parent-children-key-${childCategory.id}-${childCategory.name}`}
-                                variant="light"
-                                py={14}
-                                px={10}
-                                styles={{
-                                  inner: { textTransform: 'capitalize', fontWeight: 'normal' },
-                                }}
-                              >
-                                {childCategory.name}
-                              </Badge>
-                            ))}
-                          </Flex>
-                        </Flex>
+                                <Group>
+                                  <Indicator color="blue" />
+                                  <Text weight="bold">{parentCategory.name}</Text>
+                                </Group>
+                              </Stack>
+                            </Group>
+                          </Card.Section>
+                        )}
+                        {beingEditedCategory === parentCategory.id ? (
+                          <div></div>
+                        ) : (
+                          <Stack mt={10} spacing={14}>
+                            <Group position="apart">
+                              <Text size="sm">Хамаарах ангилалууд</Text>
+                              <Text size="sm">Нийт: {children.length}</Text>
+                            </Group>
+                            <Flex
+                              justify="flex-start"
+                              align="flex-start"
+                              direction="row"
+                              wrap="wrap"
+                              gap="xs"
+                            >
+                              {children.map((childCategory) => (
+                                <Badge
+                                  key={`parent-children-key-${childCategory.id}-${childCategory.name}`}
+                                  variant="light"
+                                  py={14}
+                                  px={10}
+                                  styles={{
+                                    inner: { textTransform: 'capitalize', fontWeight: 'normal' },
+                                  }}
+                                >
+                                  {childCategory.name}
+                                </Badge>
+                              ))}
+                            </Flex>
+                          </Stack>
+                        )}
                       </Card>
                     </Grid.Col>
                   );
