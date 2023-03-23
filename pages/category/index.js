@@ -19,12 +19,21 @@ import {
   Menu,
   Modal,
   MultiSelect,
+  Stack,
 } from '@mantine/core';
 import { DataTable } from 'mantine-datatable';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useDisclosure } from '@mantine/hooks';
 import DefaultLayout from '../../components/Layouts/DefaultLayout';
-import { IconCheck, IconEdit, IconPlus, IconSearch, IconTrash, IconUsers } from '@tabler/icons';
+import {
+  IconCheck,
+  IconEdit,
+  IconPlus,
+  IconSearch,
+  IconTrash,
+  IconUsers,
+  IconX,
+} from '@tabler/icons';
 import { CategoryModal } from '../../components/CategoryModal/CategoryModal';
 import dayjs from 'dayjs';
 import { DeleteConfirmationDialog } from '../../components/DeleteConfirmationDialog/DeleteConfirmationDialog';
@@ -33,7 +42,7 @@ import axios from 'axios';
 import CategoryEditor from '../../components/CategoryEditor/CategoryEditor';
 import requireAuthentication from '../../lib/requireAuthentication';
 const PAGE_SIZE = 15;
-function Category({ mainCats, parentCats, childCats }) {
+function Category({ mainCats, parentCats, childCats, userToken }) {
   const [activeTab, setActiveTab] = useState('main');
 
   const [mainCategories, setMainCategories] = useState([]);
@@ -73,23 +82,29 @@ function Category({ mainCats, parentCats, childCats }) {
   const [opened, { open, close }] = useDisclosure(false);
   const [confirmModalOpen, handler] = useDisclosure(false);
   const [editing, setEditing] = useState(false);
+  const [beingEditedCategory, setBeingEditedCategory] = useState();
+  const [creating, setCreating] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [updating, setUpdating] = useState(false);
   const [type, setType] = useState('');
-  const multiSelectReadOnlyStyle = {
-    input: {
-      border: 'none',
-      backgroundColor: 'transparent',
-      ':hover': {
-        cursor: 'default',
+  const multiSelectReadOnlyStyle = useMemo(
+    () => ({
+      input: {
+        border: 'none',
+        backgroundColor: 'transparent',
+        ':hover': {
+          cursor: 'default',
+        },
       },
-    },
-    searchInput: {
-      ':hover': {
-        cursor: 'default',
+      searchInput: {
+        ':hover': {
+          cursor: 'default',
+        },
       },
-    },
-  };
+    }),
+    []
+  );
+
   const openDeleteConfirmation = (categoryId, categoryName) => {
     setDeletingCategoryData({ id: categoryId, name: categoryName });
     handler.open();
@@ -107,13 +122,58 @@ function Category({ mainCats, parentCats, childCats }) {
       setChildCatRecords(data.data.childCats.slice(0, PAGE_SIZE));
     } catch (e) {}
   };
+  const createCategory = async (values, categoryType) => {
+    setCreating(true);
+    const title = 'Ангилал үүсгэлт';
+    try {
+      const res = await axios.post(
+        `${process.env.NEXT_PUBLIC_API}/admin/category/${categoryType}`,
+        {
+          name: values.name,
+          ...(categoryType === 'parent'
+            ? { main_cat_id: values.main_cat_id }
+            : categoryType === 'child'
+            ? { main_cat_id: values.main_cat_id, parent_id: values.parent_id }
+            : {}),
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${userToken}`,
+          },
+        }
+      );
+
+      if (res.status === 200 && res.data?.success) {
+        showNotification({
+          title,
+          message: res.data.message,
+          color: 'green',
+          icon: <IconCheck />,
+        });
+        await fetchAllCategories();
+      } else {
+        showNotification({
+          title: title + ' амжилтгүй',
+          message: res.data.message,
+          color: 'red',
+        });
+      }
+    } catch (e) {
+      showNotification({
+        title: title + ' амжилтгүй',
+        message: e.response.data.message,
+        color: 'red',
+      });
+    }
+    setCreating(false);
+  };
   const deleteCategory = async (id) => {
     setDeleting(true);
     const title = 'Ангилал устгалт';
     try {
       const res = await axios.delete(`${process.env.NEXT_PUBLIC_API}/admin/category/${activeTab}`, {
         headers: {
-          Authorization: `Bearer ${'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyaWQiOiI3NTkzNTBlMWYzMmVmODM1ZjRkMDhjYjI5MzllOWZjOThkZDRhMDdhZDFiMzhjMjcyNmE3ZmQxMjBjOWU4NzQ5Iiwicm9sZWlkIjozMywiaWF0IjoxNjc3MzE3MTQ1LCJleHAiOjE2Nzc5MjE5NDV9.rlnMXx48AF25X58C1t2AYCEwHAXlHq1vVsvDb773q2c'}`,
+          Authorization: `Bearer ${userToken}`,
         },
         data: {
           ...(activeTab === 'main'
@@ -123,7 +183,7 @@ function Category({ mainCats, parentCats, childCats }) {
             : { child_id: id }),
         },
       });
-      if (res.status === 200) {
+      if (res.status === 200 && res.data?.success) {
         showNotification({
           title,
           message: res.data.message,
@@ -181,11 +241,11 @@ function Category({ mainCats, parentCats, childCats }) {
         },
         {
           headers: {
-            Authorization: `Bearer ${'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyaWQiOiI3NTkzNTBlMWYzMmVmODM1ZjRkMDhjYjI5MzllOWZjOThkZDRhMDdhZDFiMzhjMjcyNmE3ZmQxMjBjOWU4NzQ5Iiwicm9sZWlkIjozMywiaWF0IjoxNjc3MzE3MTQ1LCJleHAiOjE2Nzc5MjE5NDV9.rlnMXx48AF25X58C1t2AYCEwHAXlHq1vVsvDb773q2c'}`,
+            Authorization: `Bearer ${userToken}`,
           },
         }
       );
-      if (res.status === 200) {
+      if (res.status === 200 && res.data?.success) {
         showNotification({
           title,
           message: res.data.message,
@@ -217,6 +277,14 @@ function Category({ mainCats, parentCats, childCats }) {
   return (
     <DefaultLayout>
       <Container fluid mx="xs" sx={{ maxHeight: '100%' }}>
+        <CategoryModal
+          opened={opened}
+          close={close}
+          type={type}
+          creating={creating}
+          onSubmit={createCategory}
+          categories={{ mainCategories, parentCategories, childCategories }}
+        />
         <DeleteConfirmationDialog
           isOpen={confirmModalOpen}
           close={handler.close}
@@ -250,9 +318,9 @@ function Category({ mainCats, parentCats, childCats }) {
 
                 <Menu.Dropdown>
                   <Menu.Label>Ямар ангилал үүсгэх вэ?</Menu.Label>
-                  <Menu.Item onClick={() => useCategoryModal('general')}>Ерөнхий ангилал</Menu.Item>
+                  <Menu.Item onClick={() => useCategoryModal('main')}>Ерөнхий ангилал</Menu.Item>
                   <Menu.Item onClick={() => useCategoryModal('parent')}>Дэд ангилал</Menu.Item>
-                  <Menu.Item onClick={() => useCategoryModal('product')}>Барааны ангилал</Menu.Item>
+                  <Menu.Item onClick={() => useCategoryModal('child')}>Барааны ангилал</Menu.Item>
                 </Menu.Dropdown>
               </Menu>
             </Grid.Col>
@@ -380,8 +448,6 @@ function Category({ mainCats, parentCats, childCats }) {
                               type: 'main',
                             });
                             setExpandedRecordIds([record.id]);
-                            // openProductEditingModal(record);
-                            // editInfo(company);
                           }}
                         >
                           <IconEdit size={16} />
@@ -415,50 +481,67 @@ function Category({ mainCats, parentCats, childCats }) {
                     >
                       <Card withBorder shadow="sm" radius="md">
                         <Card.Section withBorder p={15}>
-                          <Group position="apart" align="flex-start">
-                            <Flex
-                              mih={50}
-                              gap="sm"
-                              justify="flex-start"
-                              align="flex-start"
-                              direction="column"
-                              wrap="wrap"
-                            >
-                              {parents.map((e) => (
-                                <Text
-                                  weight={500}
-                                  size="sm"
-                                  key={`parent-parents-key-${e.id}-${e.name}`}
-                                >
-                                  {e.name}
-                                </Text>
-                              ))}
+                          <Group position="apart" align="flex-start" grow>
+                            <Stack mih={50} spacing="sm">
+                              <Group position="apart" grow>
+                                {parents.map((e) => (
+                                  <Text
+                                    weight={500}
+                                    size="xs"
+                                    key={`parent-parents-key-${e.id}-${e.name}`}
+                                  >
+                                    {e.name}
+                                  </Text>
+                                ))}
+                                <Group spacing="sm" position="right">
+                                  <ActionIcon
+                                    variant="light"
+                                    radius="lg"
+                                    color={
+                                      beingEditedCategory === parentCategory.id ? 'green' : 'blue'
+                                    }
+                                    onClick={() => setBeingEditedCategory(parentCategory.id)}
+                                  >
+                                    {beingEditedCategory === parentCategory.id ? (
+                                      <IconCheck size={16} />
+                                    ) : (
+                                      <IconEdit size={16} />
+                                    )}
+                                  </ActionIcon>
+                                  <ActionIcon
+                                    variant="light"
+                                    radius="lg"
+                                    color="red"
+                                    onClick={(e) => {
+                                      if (beingEditedCategory === parentCategory.id) {
+                                        setBeingEditedCategory(null);
+                                      } else {
+                                        openDeleteConfirmation(
+                                          parentCategory.id,
+                                          parentCategory.name
+                                        );
+                                      }
+                                    }}
+                                  >
+                                    {beingEditedCategory === parentCategory.id ? (
+                                      <IconX size={16} />
+                                    ) : (
+                                      <IconTrash size={16} />
+                                    )}
+                                  </ActionIcon>
+                                </Group>
+                              </Group>
 
                               <Group>
                                 <Indicator color="blue" />
                                 <Text weight="bold">{parentCategory.name}</Text>
                               </Group>
-                            </Flex>
-                            <Flex gap="sm">
-                              <ActionIcon variant="light" radius="lg" color="blue">
-                                <IconEdit size={16} />
-                              </ActionIcon>
-                              <ActionIcon
-                                variant="light"
-                                radius="lg"
-                                color="red"
-                                onClick={(e) => {
-                                  openDeleteConfirmation(parentCategory.id, parentCategory.name);
-                                }}
-                              >
-                                <IconTrash size={16} />
-                              </ActionIcon>
-                            </Flex>
+                            </Stack>
                           </Group>
                         </Card.Section>
                         <Flex mt={10} gap={14} direction="column">
                           <Group position="apart">
-                            <Text size="sm">Барааны ангилалууд</Text>
+                            <Text size="sm">Хамаарах ангилалууд</Text>
                             <Text size="sm">Нийт: {children.length}</Text>
                           </Group>
                           <Flex
@@ -497,21 +580,27 @@ function Category({ mainCats, parentCats, childCats }) {
                 withColumnBorders
                 highlightOnHover
                 records={childCatRecords}
-                // selectedRecords={selectedRecords}
-                // onSelectedRecordsChange={setSelectedRecords}
                 totalRecords={childCategories.length}
                 recordsPerPage={PAGE_SIZE}
                 page={childCatPageNumber}
                 onPageChange={(p) => setChildCatPageNumber(p)}
                 noRecordsText="Ангилал олдсонгүй"
-                // rowExpansion={{
-                //   content: ({ record }) => (
-                //     <ProductDetails
-                //       initialData={record}
-                //       categories={{ mainCategories, parentCategories, childCategories }}
-                //     />
-                //   ),
-                // }}
+                rowExpansion={{
+                  trigger: 'never',
+                  expanded: {
+                    recordIds: expandedRecordIds,
+                    onRecordIdsChange: setExpandedRecordIds,
+                  },
+                  content: ({ record, collapse }) => (
+                    <CategoryEditor
+                      initialData={record}
+                      type={activeTab}
+                      categories={{ mainCategories, parentCategories, childCategories }}
+                      collapse={collapse}
+                      onSubmit={updateCategory}
+                    />
+                  ),
+                }}
                 columns={[
                   {
                     accessor: 'name',
@@ -613,8 +702,10 @@ function Category({ mainCats, parentCats, childCats }) {
                           color="blue"
                           onClick={(e) => {
                             e.stopPropagation();
-                            // openProductEditingModal(record);
-                            // editInfo(company);
+                            setEditing({
+                              type: 'child',
+                            });
+                            setExpandedRecordIds([record.id]);
                           }}
                         >
                           <IconEdit size={16} />
@@ -637,25 +728,25 @@ function Category({ mainCats, parentCats, childCats }) {
           </Tabs>
         </Flex>
       </Container>
-      <CategoryModal opened={opened} close={close} type="general">
-        {/* Modal content */}
-      </CategoryModal>
     </DefaultLayout>
   );
 }
 
 export const getServerSideProps = requireAuthentication(async ({ req, res }) => {
-  const response = await axios.get(`${process.env.NEXT_PUBLIC_API}/category/all?type=separate`, {
-    headers: {
-      Authorization: `Bearer ${req.cookies.urga_admin_user_jwt}`,
-    },
-  });
-
+  const response = await axios.get(
+    `${process.env.NEXT_PUBLIC_API}/admin/category/all?type=separate`,
+    {
+      headers: {
+        Authorization: `Bearer ${req.cookies.urga_admin_user_jwt}`,
+      },
+    }
+  );
   return {
     props: {
-      mainCats: response.data.mainCats,
-      parentCats: response.data.parentCats,
-      childCats: response.data.childCats,
+      mainCats: response.data.data.mainCats,
+      parentCats: response.data.data.parentCats,
+      childCats: response.data.data.childCats,
+      userToken: req.cookies.urga_admin_user_jwt,
     },
   };
 });

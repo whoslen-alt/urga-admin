@@ -68,7 +68,15 @@ function ProductDetails({ initialData, categories }) {
         </Group>
         <Group spacing={6}>
           <Text weight={500}>Хямдралтай үнэ:</Text>
-          <Text>{initialData.promo_price ? initialData.promo_price : 'Байхгүй'}</Text>
+          <Text>
+            {initialData.promo_price
+              ? Intl.NumberFormat('mn', {
+                  style: 'currency',
+                  currency: 'MNT',
+                  currencyDisplay: 'narrowSymbol',
+                }).format(initialData.promo_price)
+              : 'Байхгүй'}
+          </Text>
         </Group>
       </Stack>
       <Stack p="xs" spacing="sm" align="flex-start">
@@ -78,17 +86,31 @@ function ProductDetails({ initialData, categories }) {
         </Group>
         <Group spacing={6}>
           <Text weight={500}>Бөөний үнэ:</Text>
-          <Text>{initialData.wholesale_qty ? initialData.wholesale_qty : 'Байхгүй'}</Text>
+          <Text>
+            {initialData.wholesale_qty
+              ? Intl.NumberFormat('mn', {
+                  style: 'currency',
+                  currency: 'MNT',
+                  currencyDisplay: 'narrowSymbol',
+                }).format(initialData.wholesale_qty)
+              : 'Байхгүй'}
+          </Text>
         </Group>
       </Stack>
-      {initialData.description === null ? (
-        <></>
-      ) : (
-        <Group spacing={6} p="xs">
-          <Text weight={500}>Тайлбар:</Text>
-          <Text>{initialData?.description}</Text>
+      <Stack>
+        {initialData.description === null ? (
+          <></>
+        ) : (
+          <Group spacing={6} p="xs" noWrap align="flex-start">
+            <Text weight={500}>Тайлбар:</Text>
+            <Text>{initialData?.description}</Text>
+          </Group>
+        )}
+        <Group spacing={6} p="xs" noWrap align="flex-start">
+          <Text weight={500}>Ашиглах заавар:</Text>
+          <Text>{initialData.instruction ? initialData.instruction : 'Байхгүй'}</Text>
         </Group>
-      )}
+      </Stack>
     </Group>
   );
 }

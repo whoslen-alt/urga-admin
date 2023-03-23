@@ -101,7 +101,7 @@ function Order({ orders, total }) {
           },
         }
       );
-      if (res.status === 200) {
+      if (res.status === 200 && res.data?.success) {
         showNotification({
           title,
           message: res.data.message,
@@ -152,7 +152,7 @@ function Order({ orders, total }) {
               Захиалгууд
             </Text>
           </Grid.Col>
-          <Grid.Col span={1}>
+          <Grid.Col span={2} sm={4} xs={24}>
             <DatesProvider settings={{ locale: 'mn', firstDayOfWeek: 0, weekendDays: [0] }}>
               <DatePickerInput
                 icon={<IconCalendarTime size={16} stroke={1.5} />}
@@ -176,7 +176,7 @@ function Order({ orders, total }) {
               />
             </DatesProvider>
           </Grid.Col>
-          <Grid.Col span={6}>
+          <Grid.Col span={6} sm={6} xs={24}>
             <TextInput
               placeholder="Захиалга хайх... (Захиалгын дугаар, Захиалагч, Холбогдох утас)"
               rightSection={<IconSearch size="1rem" />}
@@ -303,9 +303,13 @@ function Order({ orders, total }) {
                         color="blue"
                         onClick={(e) => {
                           e.stopPropagation();
-                          expandedRecordIds.length > 0
-                            ? setExpandedRecordIds([])
-                            : setExpandedRecordIds([orderid]);
+                          if (expandedRecordIds.length > 0) {
+                            expandedRecordIds[0] === orderid
+                              ? setExpandedRecordIds([])
+                              : setExpandedRecordIds([orderid]);
+                          } else {
+                            setExpandedRecordIds([orderid]);
+                          }
                         }}
                       >
                         <IconEye size={16} />

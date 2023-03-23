@@ -21,11 +21,11 @@ function CategoryEditor({ initialData, type, categories, collapse, onSubmit }) {
       name: initialData?.name,
       active: initialData?.active,
       ...(type === 'parent'
-        ? { main_cat_id: initialData?.main_cat_id }
+        ? { main_cat_id: [initialData.main_cat_id?.toString()] }
         : type === 'child'
         ? {
-            parent_id: initialData?.parent_id,
-            main_cat_id: initialData?.main_cat_id,
+            parent_id: [initialData.parent_id?.toString()],
+            main_cat_id: [initialData.main_cat_id?.toString()],
           }
         : {}),
       //   ...(type === 'main'
@@ -61,18 +61,46 @@ function CategoryEditor({ initialData, type, categories, collapse, onSubmit }) {
             <Grid.Col span={8}>
               <TextInput label="Ангиллын нэр" size="xs" {...form.getInputProps('name')} />
             </Grid.Col>
-            <Grid.Col span={12}>
-              <MultiSelect
-                label="Дэд ангиллууд"
-                size="xs"
-                placeholder="Байхгүй"
-                data={categories.parentCategories.map((e) => {
-                  return { value: e.id.toString(), label: e.name };
-                })}
-                {...form.getInputProps('parent_cat_id')}
-              />
-            </Grid.Col>
-            <Grid.Col span={4}>
+            {type === 'main' && (
+              <Grid.Col span={8}>
+                <MultiSelect
+                  label="Дэд ангиллууд"
+                  size="xs"
+                  placeholder="Байхгүй"
+                  data={categories.parentCategories.map((e) => {
+                    return { value: e.id.toString(), label: e.name };
+                  })}
+                  {...form.getInputProps('parent_id')}
+                />
+              </Grid.Col>
+            )}
+            {type === 'child' && (
+              <>
+                <Grid.Col span={8}>
+                  <MultiSelect
+                    label="Ерөнхий ангиллууд"
+                    size="xs"
+                    placeholder="Байхгүй"
+                    data={categories.mainCategories.map((e) => {
+                      return { value: e.id.toString(), label: e.name };
+                    })}
+                    {...form.getInputProps('main_cat_id')}
+                  />
+                </Grid.Col>
+                <Grid.Col span={8}>
+                  <MultiSelect
+                    label="Дэд ангиллууд"
+                    size="xs"
+                    placeholder="Байхгүй"
+                    data={categories.parentCategories.map((e) => {
+                      return { value: e.id.toString(), label: e.name };
+                    })}
+                    {...form.getInputProps('parent_id')}
+                  />
+                </Grid.Col>
+              </>
+            )}
+            <Grid.Col span={6}>
               <Select
                 size="xs"
                 label="Идэвхитэй эсэх"

@@ -15,6 +15,7 @@ import {
   Button,
   Menu,
   Flex,
+  Tooltip,
 } from '@mantine/core';
 import { DataTable } from 'mantine-datatable';
 import { useState, useEffect } from 'react';
@@ -32,6 +33,8 @@ import {
   IconUsers,
   IconX,
 } from '@tabler/icons';
+import IconExcel from '~icons/vscode-icons/file-type-excel.jsx';
+
 import axios from 'axios';
 import ProductDetails from '../../components/ProductDetails/ProductDetails';
 import { useDisclosure } from '@mantine/hooks';
@@ -41,6 +44,7 @@ import { modals } from '@mantine/modals';
 import { DeleteConfirmationDialog } from '../../components/DeleteConfirmationDialog/DeleteConfirmationDialog';
 import { showNotification } from '@mantine/notifications';
 import requireAuthentication from '../../lib/requireAuthentication';
+import ExcelUploader from '../../components/ExcelUploader/ExcelUploader';
 
 const PAGE_SIZE = 15;
 
@@ -50,10 +54,13 @@ function Product({ products, total, mainCategories, parentCategories, childCateg
   const [initialRecords, setInitalRecords] = useState();
   const [records, setRecords] = useState();
   const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [updating, setUpdating] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [deletingProduct, setDeletingProduct] = useState({ id: '', name: '' });
   const [opened, { open, close }] = useDisclosure(false);
+  const [excelUploaderOpened, { open: openExcelUploader, close: closeExcelUploader }] =
+    useDisclosure(false);
   const [confirmationOpened, handlers] = useDisclosure(false);
   const [editingProdData, setEditingProdData] = useState();
 
@@ -88,7 +95,7 @@ function Product({ products, total, mainCategories, parentCategories, childCateg
         },
         data: { product_id: id },
       });
-      if (res.status === 200) {
+      if (res.status === 200 && res.data?.success) {
         showNotification({
           title: 'Бараа устгалт',
           message: res.data.message,
@@ -146,7 +153,7 @@ function Product({ products, total, mainCategories, parentCategories, childCateg
           },
         }
       );
-      if (res.status === 200) {
+      if (res.status === 200 && res.data?.success) {
         showNotification({
           title,
           message: res.data.message,
@@ -204,7 +211,7 @@ function Product({ products, total, mainCategories, parentCategories, childCateg
           },
         }
       );
-      if (res.status === 200) {
+      if (res.status === 200 && res.data?.success) {
         showNotification({
           title,
           message: res.data.message,
@@ -239,6 +246,39 @@ function Product({ products, total, mainCategories, parentCategories, childCateg
       setRecords(initialRecords.filter((e) => e.name.toString().toLowerCase().includes(query)));
     }
   };
+  const uploadFormData = async ({ file, images }) => {
+    const title = 'Бараа бүртгэл (Excel)';
+    setUploading(true);
+    const formData = new FormData();
+    formData.append('excel', file);
+    formData.append('img', images);
+    try {
+      const res = await axios.post(`${process.env.NEXT_PUBLIC_API}/product/excel?excel`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      if (res.status === 200 && res.data?.success) {
+        showNotification({
+          title,
+          message: res.data.message,
+          color: 'green',
+          icon: <IconCheck />,
+        });
+      } else {
+        showNotification({
+          title,
+          message: res.data.message,
+          color: 'red',
+        });
+      }
+    } catch (e) {
+      showNotification({
+        title,
+        message: e.message,
+        color: 'red',
+      });
+    }
+    setUploading(false);
+  };
   return (
     <DefaultLayout>
       <Container fluid mx="xs" sx={{ maxHeight: '100%' }}>
@@ -258,13 +298,19 @@ function Product({ products, total, mainCategories, parentCategories, childCateg
           onSubmit={editingProdData?.create ? createProduct : updateProduct}
           categories={{ mainCategories: [], parentCategories: [], childCategories: [] }}
         />
+        <ExcelUploader
+          isOpen={excelUploaderOpened}
+          close={closeExcelUploader}
+          loading={uploading}
+          onSubmit={uploadFormData}
+        />
         <Grid position="apart" grow>
-          <Grid.Col span={4}>
+          <Grid.Col span={2}>
             <Text size="lg" weight={500}>
               Бараанууд
             </Text>
           </Grid.Col>
-          <Grid.Col span={4}>
+          <Grid.Col span={4} offset={3}>
             <TextInput
               placeholder="Бараа хайх... (Нэр)"
               rightSection={<IconSearch size="1rem" />}
@@ -273,18 +319,30 @@ function Product({ products, total, mainCategories, parentCategories, childCateg
               onChange={(e) => handleSearch(e.target.value.toLowerCase())}
             />
           </Grid.Col>
-          <Grid.Col span={1}>
-            <Button
-              variant="filled"
-              radius="xl"
-              styles={{ label: { padding: 12 } }}
-              onClick={(e) => {
-                e.preventDefault();
-                openProductEditingModal({}, 'creation');
-              }}
-            >
-              Бараа Үүсгэх
-            </Button>
+          <Grid.Col span={2}>
+            <Group position="center">
+              <Button
+                variant="filled"
+                radius="xl"
+                styles={{ label: { padding: 12 } }}
+                onClick={(e) => {
+                  e.preventDefault();
+                  openProductEditingModal({}, 'creation');
+                }}
+              >
+                Бараа Үүсгэх
+              </Button>
+              <Tooltip label="Excel файлаар бараа оруулах" withArrow>
+                <ActionIcon
+                  onClick={(e) => {
+                    e.preventDefault();
+                    openExcelUploader();
+                  }}
+                >
+                  <IconExcel style={{ fontSize: '2em' }} />
+                </ActionIcon>
+              </Tooltip>
+            </Group>
           </Grid.Col>
         </Grid>
         <Box sx={{ height: '100%' }}>
@@ -359,7 +417,13 @@ function Product({ products, total, mainCategories, parentCategories, childCateg
                 title: 'Тайлбар',
                 render: ({ description }) => <Text lineClamp={5}>{description}</Text>,
               },
-              { accessor: 'detailed_description', title: 'Дэлгэрэнгүй тайлбар' },
+              {
+                accessor: 'detailed_description',
+                title: 'Дэлгэрэнгүй тайлбар',
+                render: ({ detailed_description }) => (
+                  <Text lineClamp={5}>{detailed_description}</Text>
+                ),
+              },
               {
                 accessor: 'active',
                 title: 'Идэвхитэй эсэх',
@@ -419,7 +483,7 @@ function Product({ products, total, mainCategories, parentCategories, childCateg
       </Container>
     </DefaultLayout>
   );
-} 
+}
 export const getServerSideProps = requireAuthentication(async ({ req, res }) => {
   const response = await axios.get(`${process.env.NEXT_PUBLIC_API}/product/local/admin`, {
     headers: {
