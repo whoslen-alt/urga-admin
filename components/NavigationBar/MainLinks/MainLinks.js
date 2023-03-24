@@ -43,7 +43,7 @@ function MainLink({ icon, label, link }) {
 
 const data = [
   { icon: <IconList size={16} />, label: 'Ангилалууд', link: '/category' },
-  // { icon: <IconUsers size={16} />, label: 'Админ хэрэглэгчид', link: '/user' },
+  { icon: <IconUsers size={16} />, label: 'Админ хэрэглэгчид', link: '/user' },
   { icon: <IconPackage size={16} />, label: 'Бараанууд', link: '/product' },
   { icon: <IconCheckupList size={16} />, label: 'Захиалгууд', link: '/order' },
   { icon: <IconBrowser size={16} />, label: 'Веб сайт тохиргоо', link: '/webconfig' },

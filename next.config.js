@@ -4,6 +4,14 @@ const withBundleAnalyzer = require('@next/bundle-analyzer')({
 
 module.exports = {
   reactStrictMode: false,
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'http',
+        hostname: '3.0.91.173',
+      },
+    ],
+  },
   webpack(config) {
     config.plugins.push(
       require('unplugin-icons/webpack')({

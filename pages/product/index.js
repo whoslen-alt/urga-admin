@@ -37,7 +37,7 @@ import IconExcel from '~icons/vscode-icons/file-type-excel.jsx';
 
 import axios from 'axios';
 import ProductDetails from '../../components/ProductDetails/ProductDetails';
-import { useDisclosure } from '@mantine/hooks';
+import { useDebouncedValue, useDisclosure } from '@mantine/hooks';
 import ProductModal from '../../components/ProductModal/ProductModal';
 import Image from 'next/image';
 import { modals } from '@mantine/modals';
@@ -51,8 +51,8 @@ const PAGE_SIZE = 15;
 function Product({ products, total, mainCategories, parentCategories, childCategories }) {
   const [selectedRecords, setSelectedRecords] = useState([]);
   const [page, setPage] = useState(1);
-  const [initialRecords, setInitalRecords] = useState();
-  const [records, setRecords] = useState();
+  const [query, setQuery] = useState('');
+  const [records, setRecords] = useState(products.slice(0, PAGE_SIZE));
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [updating, setUpdating] = useState(false);
@@ -63,19 +63,47 @@ function Product({ products, total, mainCategories, parentCategories, childCateg
     useDisclosure(false);
   const [confirmationOpened, handlers] = useDisclosure(false);
   const [editingProdData, setEditingProdData] = useState();
+  const [debounced] = useDebouncedValue(query, 200);
 
   useEffect(() => {
-    setInitalRecords(products);
-    console.log(products);
-    setRecords(products);
-  }, []);
-
-  const fetchPage = async (pageNumber) => {
+    const from = (page - 1) * PAGE_SIZE;
+    const to = from + PAGE_SIZE;
+    setRecords(products.slice(from, to));
+  }, [page]);
+  // useEffect(() => {
+  //   setRecords(
+  //     initialRecords.filter(({ name }) => {
+  //       if (query !== '' && !name.toLowerCase().includes(query.trim().toLowerCase())) {
+  //         return false;
+  //       }
+  //       return true;
+  //     })
+  //   );
+  // }, [query]);
+  useEffect(() => {
+    handleSearch();
+  }, [query]);
+  const handleSearch = () => {
+    const from = (page - 1) * PAGE_SIZE;
+    const to = from + PAGE_SIZE;
+    if (query === '') {
+      setRecords(products.slice(from, to));
+    } else {
+      setRecords(
+        products.filter(({ name }) => {
+          if (!name.toLowerCase().includes(query.trim().toLowerCase())) {
+            return false;
+          }
+          return true;
+        })
+      );
+    }
+  };
+  const fetchPage = async () => {
     setLoading(true);
     // const offset = pageNumber * PAGE_SIZE;
     const res = await axios(`${process.env.NEXT_PUBLIC_API}/product/local/admin`);
     setRecords(res.data.data);
-    setPage(pageNumber);
     setLoading(false);
   };
   const openProductEditingModal = (productData, type = 'edit') => {
@@ -102,7 +130,7 @@ function Product({ products, total, mainCategories, parentCategories, childCateg
           color: 'green',
           icon: <IconCheck />,
         });
-        await fetchPage(page);
+        await fetchPage();
       } else {
         showNotification({
           title: 'Бараа устгалт',
@@ -160,7 +188,7 @@ function Product({ products, total, mainCategories, parentCategories, childCateg
           color: 'green',
           icon: <IconCheck />,
         });
-        await fetchPage(page);
+        await fetchPage();
       } else {
         showNotification({
           title,
@@ -218,7 +246,7 @@ function Product({ products, total, mainCategories, parentCategories, childCateg
           color: 'green',
           icon: <IconCheck />,
         });
-        await fetchPage(page);
+        await fetchPage();
       } else {
         showNotification({
           title,
@@ -239,13 +267,7 @@ function Product({ products, total, mainCategories, parentCategories, childCateg
     setDeletingProduct({ id: productId, name: productName });
     handlers.open();
   };
-  const handleSearch = (query) => {
-    if (query.length === 0) {
-      setRecords(initialRecords);
-    } else {
-      setRecords(initialRecords.filter((e) => e.name.toString().toLowerCase().includes(query)));
-    }
-  };
+
   const uploadFormData = async ({ file, images }) => {
     const title = 'Бараа бүртгэл (Excel)';
     setUploading(true);
@@ -316,7 +338,10 @@ function Product({ products, total, mainCategories, parentCategories, childCateg
               rightSection={<IconSearch size="1rem" />}
               radius="xl"
               styles={{ root: { flexGrow: 2 } }}
-              onChange={(e) => handleSearch(e.target.value.toLowerCase())}
+              onChange={(e) => {
+                e.preventDefault();
+                setQuery(e.currentTarget.value);
+              }}
             />
           </Grid.Col>
           <Grid.Col span={2}>
@@ -345,141 +370,150 @@ function Product({ products, total, mainCategories, parentCategories, childCateg
             </Group>
           </Grid.Col>
         </Grid>
-        <Box sx={{ height: '100%' }}>
-          <DataTable
-            mt="lg"
-            fontSize="xs"
-            borderRadius="sm"
-            withBorder
-            withColumnBorders
-            highlightOnHover
-            records={records}
-            selectedRecords={selectedRecords}
-            onSelectedRecordsChange={setSelectedRecords}
-            totalRecords={total}
-            recordsPerPage={PAGE_SIZE}
-            page={page}
-            fetching={loading}
-            onPageChange={(p) => fetchPage(p)}
-            noRecordsText="Бараа олдсонгүй"
-            rowExpansion={{
-              content: ({ record }) => (
-                <ProductDetails
-                  initialData={record}
-                  categories={{ mainCategories: [], parentCategories: [], childCategories: [] }}
-                />
+
+        <DataTable
+          height="75vh"
+          minHeight="75vh"
+          mt="lg"
+          fontSize="xs"
+          borderRadius="sm"
+          withBorder
+          withColumnBorders
+          highlightOnHover
+          records={records}
+          selectedRecords={selectedRecords}
+          onSelectedRecordsChange={setSelectedRecords}
+          fetching={loading}
+          page={page}
+          onPageChange={(p) => setPage(p)}
+          totalRecords={total}
+          recordsPerPage={PAGE_SIZE}
+          noRecordsText="Бараа олдсонгүй"
+          rowExpansion={{
+            content: ({ record }) => (
+              <ProductDetails
+                initialData={record}
+                categories={{ mainCategories: [], parentCategories: [], childCategories: [] }}
+              />
+            ),
+          }}
+          columns={[
+            {
+              accessor: 'product_image',
+              title: 'Зураг',
+              width: 100,
+              render: ({ product_image }) =>
+                product_image ? (
+                  <Center>
+                    <Image
+                      src={`http://${product_image?.images[0]}`}
+                      alt="Зураг"
+                      style={{ objectFit: 'contain' }}
+                      height={60}
+                      width={60}
+                    />
+                  </Center>
+                ) : (
+                  <Center>
+                    <IconPhotoOff color="gray" />
+                  </Center>
+                ),
+            },
+            {
+              accessor: 'name',
+              title: 'Нэр',
+              width: 200,
+              render: (r) => <Text weight={500}>{r.name}</Text>,
+            },
+
+            {
+              accessor: 'instock',
+              title: 'Үлдэгдэл',
+              textAlignment: 'center',
+              width: 85,
+              render: (r) => (
+                <Text>
+                  {r.instock ? r.instock : 0} {r.unit}
+                </Text>
               ),
-            }}
-            columns={[
-              {
-                accessor: 'product_image',
-                title: 'Зураг',
-                width: 100,
-                render: (r) =>
-                  r.product_image ? (
-                    <Image src={(r.product_image ??= null)} alt="Зураг" height={100} width={100} />
-                  ) : (
-                    <Center>
-                      <IconPhotoOff color="gray" />
-                    </Center>
-                  ),
-              },
-              {
-                accessor: 'name',
-                title: 'Нэр',
-                width: 200,
-                render: (r) => <Text weight={500}>{r.name}</Text>,
-              },
+            },
+            {
+              accessor: 'price',
+              title: 'Нэгж үнэ (₮)',
+              textAlignment: 'center',
+              width: 95,
+              render: ({ price }) => <Text>{Intl.NumberFormat().format(price)}</Text>,
+            },
 
-              {
-                accessor: 'instock',
-                title: 'Үлдэгдэл',
-                textAlignment: 'center',
-                width: 85,
-                render: (r) => (
-                  <Text>
-                    {r.instock ? r.instock : 0} {r.unit}
-                  </Text>
-                ),
-              },
-              {
-                accessor: 'price',
-                title: 'Нэгж үнэ (₮)',
-                textAlignment: 'center',
-                width: 95,
-                render: ({ price }) => <Text>{Intl.NumberFormat().format(price)}</Text>,
-              },
+            { accessor: 'note', title: 'Тэмдэглэл' },
 
-              { accessor: 'note', title: 'Тэмдэглэл' },
-
-              {
-                accessor: 'description',
-                title: 'Тайлбар',
-                render: ({ description }) => <Text lineClamp={5}>{description}</Text>,
-              },
-              {
-                accessor: 'detailed_description',
-                title: 'Дэлгэрэнгүй тайлбар',
-                render: ({ detailed_description }) => (
-                  <Text lineClamp={5}>{detailed_description}</Text>
-                ),
-              },
-              {
-                accessor: 'active',
-                title: 'Идэвхитэй эсэх',
-                width: 130,
-                textAlignment: 'center',
-                render: (record) => (
-                  <Badge
-                    color={record.active ? 'green' : 'red'}
-                    size="sm"
-                    variant="filled"
-                    styles={{
-                      inner: {
-                        textTransform: 'capitalize',
-                        fontWeight: 500,
-                      },
-                      root: {
-                        padding: '8px 8px 9px 8px',
-                      },
+            {
+              accessor: 'description',
+              title: 'Тайлбар',
+              render: ({ description }) => <Text lineClamp={5}>{description}</Text>,
+            },
+            {
+              accessor: 'detailed_description',
+              title: 'Дэлгэрэнгүй тайлбар',
+              render: ({ detailed_description }) => (
+                <Text lineClamp={5}>{detailed_description}</Text>
+              ),
+            },
+            {
+              accessor: 'active',
+              title: 'Идэвхитэй эсэх',
+              width: 130,
+              textAlignment: 'center',
+              render: (record) => (
+                <Badge
+                  color={record.active ? 'green' : 'red'}
+                  size="sm"
+                  variant="filled"
+                  styles={{
+                    inner: {
+                      textTransform: 'capitalize',
+                      fontWeight: 500,
+                    },
+                    root: {
+                      padding: '8px 8px 9px 8px',
+                    },
+                  }}
+                >
+                  {record.active ? 'Идэвхитэй' : 'Идэвхигүй'}
+                </Badge>
+              ),
+            },
+            {
+              accessor: 'actions',
+              title: <Text>Үйлдэл</Text>,
+              textAlignment: 'center',
+              width: 80,
+              render: (record) => (
+                <Group spacing={4} noWrap>
+                  <ActionIcon
+                    color="blue"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      openProductEditingModal(record);
+                      // editInfo(company);
                     }}
                   >
-                    {record.active ? 'Идэвхитэй' : 'Идэвхигүй'}
-                  </Badge>
-                ),
-              },
-              {
-                accessor: 'actions',
-                title: <Text>Үйлдэл</Text>,
-                textAlignment: 'center',
-                width: 80,
-                render: (record) => (
-                  <Group spacing={4} noWrap>
-                    <ActionIcon
-                      color="blue"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        openProductEditingModal(record);
-                        // editInfo(company);
-                      }}
-                    >
-                      <IconEdit size={16} />
-                    </ActionIcon>
-                    <ActionIcon
-                      color="red"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        openDeleteConfirmation(record.id, record.name);
-                      }}
-                    >
-                      <IconTrash size={16} />
-                    </ActionIcon>
-                  </Group>
-                ),
-              },
-            ]}
-          />
-        </Box>
+                    <IconEdit size={16} />
+                  </ActionIcon>
+                  <ActionIcon
+                    color="red"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      openDeleteConfirmation(record.id, record.name);
+                    }}
+                  >
+                    <IconTrash size={16} />
+                  </ActionIcon>
+                </Group>
+              ),
+            },
+          ]}
+        />
       </Container>
     </DefaultLayout>
   );

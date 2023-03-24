@@ -6,6 +6,7 @@ export default async function handler(req, res) {
 
   try {
     const result = await axios.post(`${process.env.API_URL}/admin/login`, { username, password });
+    console.log(result);
     if (result.status === 200 && result.data?.success) {
       const userToken = result.data.token;
       const serialised = serialize('urga_admin_user_jwt', userToken, {
@@ -21,6 +22,6 @@ export default async function handler(req, res) {
       res.status(result.status).json({ success: false });
     }
   } catch (err) {
-    res.status(500).json({ error: err, message: 'login failed' });
+    res.status(500).json({ error: err, message: err.response.data.message });
   }
 }

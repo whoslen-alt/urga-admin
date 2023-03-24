@@ -46,7 +46,7 @@ export default function Login() {
       .catch((err) => {
         showNotification({
           title: 'Нэвтрэхэд алдаа гарлаа',
-          message: err,
+          message: err.response.data.message,
           color: 'red',
         });
       });

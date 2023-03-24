@@ -22,6 +22,8 @@ import {
   Stack,
   Select,
   LoadingOverlay,
+  Popover,
+  List,
 } from '@mantine/core';
 import { DataTable } from 'mantine-datatable';
 import { useState, useEffect, useMemo } from 'react';
@@ -96,6 +98,7 @@ function Category({ mainCats, parentCats, childCats, userToken }) {
   const [confirmModalOpen, handler] = useDisclosure(false);
   const [editing, setEditing] = useState(false);
   const [beingEditedCategory, setBeingEditedCategory] = useState();
+  const [moreHovered, setMoreHovered] = useState();
   const [creating, setCreating] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [updating, setUpdating] = useState(false);
@@ -346,6 +349,8 @@ function Category({ mainCats, parentCats, childCats, userToken }) {
             </Tabs.List>
             <Tabs.Panel value="main" pt="xl">
               <DataTable
+                height="75vh"
+                minHeight="75vh"
                 fontSize="xs"
                 borderRadius="sm"
                 withBorder
@@ -487,9 +492,9 @@ function Category({ mainCats, parentCats, childCats, userToken }) {
                   const children = childCategories.filter((e) => e.parent_id === parentCategory.id);
                   return (
                     <Grid.Col
-                      sm={6}
-                      md={3}
-                      lg={3}
+                      sm={4}
+                      md={4}
+                      lg={4}
                       key={`parent-key-${parentCategory.id}-${parentCategory.name}`}
                     >
                       <Card
@@ -540,7 +545,7 @@ function Category({ mainCats, parentCats, childCats, userToken }) {
                                   wrap="wrap"
                                   gap="xs"
                                 >
-                                  {children.map((childCategory) => (
+                                  {children.slice(0, 5).map((childCategory) => (
                                     <Badge
                                       key={`parent-children-key-${childCategory.id}-${childCategory.name}`}
                                       variant="light"
@@ -556,6 +561,46 @@ function Category({ mainCats, parentCats, childCats, userToken }) {
                                       {childCategory.name}
                                     </Badge>
                                   ))}
+                                  {children.length > 5 && (
+                                    <Popover
+                                      width={200}
+                                      position="bottom"
+                                      withArrow
+                                      shadow="md"
+                                      withinPortal
+                                      opened={moreHovered === parentCategory.id}
+                                    >
+                                      <Popover.Target>
+                                        <Badge
+                                          styles={{
+                                            inner: {
+                                              cursor: 'default',
+                                            },
+                                          }}
+                                          variant="light"
+                                          py={14}
+                                          px={10}
+                                          onMouseEnter={() => setMoreHovered(parentCategory.id)}
+                                          onMouseLeave={() => setMoreHovered()}
+                                        >
+                                          +{children.length - 5}
+                                        </Badge>
+                                      </Popover.Target>
+                                      <Popover.Dropdown>
+                                        <Stack>
+                                          <List size="xs">
+                                            {children.slice(5, children.length).map((other) => (
+                                              <List.Item
+                                                key={`parent-children-key-${other.id}-${other.name}`}
+                                              >
+                                                {other.name}
+                                              </List.Item>
+                                            ))}
+                                          </List>
+                                        </Stack>
+                                      </Popover.Dropdown>
+                                    </Popover>
+                                  )}
                                 </Flex>
                               </Stack>
                               <Group spacing="sm" position="right">
@@ -646,7 +691,7 @@ function Category({ mainCats, parentCats, childCats, userToken }) {
                               wrap="wrap"
                               gap="xs"
                             >
-                              {children.map((childCategory) => (
+                              {children.slice(0, 5).map((childCategory) => (
                                 <Badge
                                   key={`parent-children-key-${childCategory.id}-${childCategory.name}`}
                                   variant="light"
@@ -659,6 +704,46 @@ function Category({ mainCats, parentCats, childCats, userToken }) {
                                   {childCategory.name}
                                 </Badge>
                               ))}
+                              {children.length > 5 && (
+                                <Popover
+                                  width={200}
+                                  position="bottom"
+                                  withArrow
+                                  shadow="md"
+                                  withinPortal
+                                  opened={moreHovered === parentCategory.id}
+                                >
+                                  <Popover.Target>
+                                    <Badge
+                                      styles={{
+                                        inner: {
+                                          cursor: 'default',
+                                        },
+                                      }}
+                                      variant="light"
+                                      py={14}
+                                      px={10}
+                                      onMouseEnter={() => setMoreHovered(parentCategory.id)}
+                                      onMouseLeave={() => setMoreHovered()}
+                                    >
+                                      +{children.length - 5}
+                                    </Badge>
+                                  </Popover.Target>
+                                  <Popover.Dropdown>
+                                    <Stack>
+                                      <List size="xs">
+                                        {children.slice(5, children.length).map((other) => (
+                                          <List.Item
+                                            key={`parent-children-key-${other.id}-${other.name}`}
+                                          >
+                                            {other.name}
+                                          </List.Item>
+                                        ))}
+                                      </List>
+                                    </Stack>
+                                  </Popover.Dropdown>
+                                </Popover>
+                              )}
                             </Flex>
                           </Stack>
                         )}
@@ -670,6 +755,8 @@ function Category({ mainCats, parentCats, childCats, userToken }) {
             </Tabs.Panel>
             <Tabs.Panel value="child" pt="xl">
               <DataTable
+                height="75vh"
+                minHeight="75vh"
                 fontSize="xs"
                 borderRadius="sm"
                 withBorder
