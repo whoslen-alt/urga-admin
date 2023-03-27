@@ -15,7 +15,7 @@ import { getCookie, getCookies } from 'cookies-next';
 import requireAuthentication from '../lib/requireAuthentication';
 
 export default function App() {
-  return <DefaultLayout>as</DefaultLayout>;
+  return <DefaultLayout></DefaultLayout>;
 }
 export const getServerSideProps = requireAuthentication(async ({ req, res }) => {
   return {

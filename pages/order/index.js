@@ -20,7 +20,7 @@ import { useState, useEffect, useMemo } from 'react';
 import DefaultLayout from '../../components/Layouts/DefaultLayout';
 import { IconCalendarTime, IconCheck, IconCopy, IconEye, IconSearch } from '@tabler/icons';
 import axios from 'axios';
-import { useDisclosure } from '@mantine/hooks';
+import { useDebouncedValue, useDisclosure } from '@mantine/hooks';
 import Image from 'next/image';
 import { showNotification } from '@mantine/notifications';
 import { DatesProvider, DatePickerInput, Calendar } from '@mantine/dates';
@@ -34,11 +34,14 @@ import requireAuthentication from '../../lib/requireAuthentication';
 const PAGE_SIZE = 15;
 const dateFormat = 'YYYY-MM-DD';
 
-function Order({ orders, total }) {
-  const [initialRecords, setInitialRecords] = useState();
-  const [records, setRecords] = useState();
+function Order({ orders, total: totalOrders, userToken }) {
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(totalOrders);
+  const [records, setRecords] = useState(orders);
   const [loading, setLoading] = useState(false);
   const [updating, setUpdating] = useState(false);
+  const [query, setQuery] = useState('');
+  const [debounced] = useDebouncedValue(query, 500);
   const [popovers, setPopovers] = useState(
     orders.map((e) => {
       return {
@@ -58,28 +61,37 @@ function Order({ orders, total }) {
       orderStatus: isNotEmpty('Төлөв сонгоно уу'),
     },
   });
-  useEffect(() => {
-    setRecords(orders);
-    setInitialRecords(orders);
-  }, []);
 
   useEffect(() => {
-    fetchPage();
+    fetchPage(page);
   }, [dates]);
-  const handleSearch = (query) => {
-    if (query.length === 0) {
-      setRecords(initialRecords);
-    } else {
-      setRecords(
-        initialRecords.filter(
-          (e) =>
-            e.orderid.toString().toLowerCase().includes(query) ||
-            e.user?.given_name?.toString().toLowerCase().includes(query) ||
-            e.user?.mobile?.toString().includes(query)
-        )
-      );
-    }
-  };
+
+  useEffect(() => {
+    handleSearch();
+  }, [debounced]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [handleSearch]);
+  async function handleSearch() {
+    setLoading(true);
+    const from = (page - 1) * PAGE_SIZE;
+    const res = await axios.get(
+      `${process.env.NEXT_PUBLIC_API}/admin/order/local?fromDate=${dayjs(dates?.[0]).format(
+        dateFormat
+      )}&untilDate=${dayjs(dates?.[1]).format(
+        dateFormat
+      )}&offset=${from}&limit=${PAGE_SIZE}&orderid=${debounced}`,
+      {
+        headers: {
+          Authorization: `Bearer ${userToken}`,
+        },
+      }
+    );
+    setRecords(res.data.data);
+    setTotal(res.data?.data?.length);
+    setLoading(false);
+  }
   const updateOrderStatus = async (orderId, initialStatus, orderStatus) => {
     const title = 'Захиалгын төлөв шинэчлэлт';
     const currentPopovers = [...popovers];
@@ -97,7 +109,7 @@ function Order({ orders, total }) {
         { status: orderStatus, orderid: orderId },
         {
           headers: {
-            Authorization: `Bearer ${'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyaWQiOiI3NTkzNTBlMWYzMmVmODM1ZjRkMDhjYjI5MzllOWZjOThkZDRhMDdhZDFiMzhjMjcyNmE3ZmQxMjBjOWU4NzQ5Iiwicm9sZWlkIjozMywiaWF0IjoxNjc3MzE3MTQ1LCJleHAiOjE2Nzc5MjE5NDV9.rlnMXx48AF25X58C1t2AYCEwHAXlHq1vVsvDb773q2c'}`,
+            Authorization: `Bearer ${userToken}`,
           },
         }
       );
@@ -109,7 +121,7 @@ function Order({ orders, total }) {
           icon: <IconCheck />,
         });
 
-        await fetchPage();
+        await fetchPage(page);
         setPopovers(currentPopovers);
       } else {
         showNotification({
@@ -127,19 +139,24 @@ function Order({ orders, total }) {
     }
     setUpdating(false);
   };
-  const fetchPage = async () => {
+
+  const fetchPage = async (pageNumber) => {
     setLoading(true);
+    const from = (pageNumber - 1) * PAGE_SIZE;
     const res = await axios.get(
       `${process.env.NEXT_PUBLIC_API}/admin/order/local?fromDate=${dayjs(dates?.[0]).format(
         dateFormat
-      )}&untilDate=${dayjs(dates?.[1]).format(dateFormat)}`,
+      )}&untilDate=${dayjs(dates?.[1]).format(
+        dateFormat
+      )}&offset=${from}&limit=${PAGE_SIZE}&orderid=${debounced}`,
       {
         headers: {
-          Authorization: `Bearer ${'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyaWQiOiIxYWVmYmM4ZDZhMGY2ODc3YjJiMjU2YWIwODEwY2VjMDdlZGM0YzdkOGE4NTFhY2U3MDQ2NjdlZjQyMjc1NGFkIiwicm9sZWlkIjoxMDAsImlhdCI6MTY3OTI0MTc3NCwiZXhwIjoxNjc5ODQ2NTc0fQ.LijO3-6xPvDAhyeW73oh5ecuAWVhz9gytwBFLvm6UXY'}`,
+          Authorization: `Bearer ${userToken}`,
         },
       }
     );
     setRecords(res.data.data);
+    setTotal(res.data?.data?.length);
     setLoading(false);
   };
 
@@ -182,7 +199,7 @@ function Order({ orders, total }) {
               rightSection={<IconSearch size="1rem" />}
               radius="xl"
               styles={{ root: { flexGrow: 2 } }}
-              onChange={(e) => handleSearch(e.target.value.toLowerCase())}
+              onChange={(e) => setQuery(e.currentTarget.value)}
             />
           </Grid.Col>
         </Grid>
@@ -199,6 +216,11 @@ function Order({ orders, total }) {
           totalRecords={total}
           recordsPerPage={PAGE_SIZE}
           fetching={loading}
+          page={page}
+          onPageChange={(pageNum) => {
+            setPage(pageNum);
+            fetchPage(pageNum);
+          }}
           idAccessor="orderid"
           noRecordsText="Захиалга олдсонгүй"
           rowExpansion={{
@@ -263,15 +285,13 @@ function Order({ orders, total }) {
               title: 'Захиалгын дүн',
               textAlignment: 'center',
               width: 120,
-              render: ({ total }) => (
-                <Text>
-                  {Intl.NumberFormat('mn', {
-                    style: 'currency',
-                    currency: 'MNT',
-                    currencyDisplay: 'narrowSymbol',
-                  }).format(total)}
-                </Text>
-              ),
+              render: ({ total }) => {
+                Intl.NumberFormat('mn', {
+                  style: 'currency',
+                  currency: 'MNT',
+                  currencyDisplay: 'narrowSymbol',
+                }).format(total);
+              },
             },
             { accessor: 'note', title: 'Тэмдэглэл' },
             {
@@ -398,12 +418,14 @@ function Order({ orders, total }) {
 }
 
 export const getServerSideProps = requireAuthentication(async ({ req, res }) => {
+  const from = 0;
+  const to = PAGE_SIZE;
   const dateFormat = 'YYYY-MM-DD';
   const initialDates = [dayjs().subtract(7, 'days'), dayjs()];
   const response = await axios.get(
     `${process.env.NEXT_PUBLIC_API}/admin/order/local?fromDate=${initialDates[0].format(
       dateFormat
-    )}&untilDate=${initialDates[1].format(dateFormat)}`,
+    )}&untilDate=${initialDates[1].format(dateFormat)}?offset=${from}&limit=${to}`,
     {
       headers: {
         Authorization: `Bearer ${req.cookies.urga_admin_user_jwt}`,
@@ -412,9 +434,10 @@ export const getServerSideProps = requireAuthentication(async ({ req, res }) => 
   );
   return {
     props: {
-      orders: response.data.data,
+      orders: response.data?.data,
       // total: res.data.total,
-      total: response.data.data.length,
+      total: response?.data?.data?.length,
+      userToken: req.cookies.urga_admin_user_jwt,
     },
   };
 });

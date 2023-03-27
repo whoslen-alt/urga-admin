@@ -316,15 +316,15 @@ function Category({ mainCats, parentCats, childCats, userToken }) {
                 Ангиллууд
               </Text>
             </Grid.Col>
-            <Grid.Col span={4}>
+            {/* <Grid.Col span={4}>
               <TextInput
                 placeholder="Ангилал хайх"
                 rightSection={<IconSearch size="1rem" />}
                 radius="xl"
                 styles={{ root: { flexGrow: 2 } }}
               />
-            </Grid.Col>
-            <Grid.Col span={1}>
+            </Grid.Col> */}
+            <Grid.Col span={1} offset={6}>
               <Menu shadow="md" withArrow>
                 <Menu.Target>
                   <Button variant="filled" radius="xl" styles={{ label: { padding: 12 } }}>
@@ -553,7 +553,7 @@ function Category({ mainCats, parentCats, childCats, userToken }) {
                                       px={10}
                                       styles={{
                                         inner: {
-                                          textTransform: 'capitalize',
+                                          textTransform: 'none',
                                           fontWeight: 'normal',
                                         },
                                       }}
@@ -698,7 +698,7 @@ function Category({ mainCats, parentCats, childCats, userToken }) {
                                   py={14}
                                   px={10}
                                   styles={{
-                                    inner: { textTransform: 'capitalize', fontWeight: 'normal' },
+                                    inner: { textTransform: 'none', fontWeight: 'normal' },
                                   }}
                                 >
                                   {childCategory.name}

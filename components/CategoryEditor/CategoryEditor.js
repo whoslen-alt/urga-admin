@@ -11,10 +11,26 @@ import {
 } from '@mantine/core';
 import { isNotEmpty, useForm } from '@mantine/form';
 import { IconArrowBack, IconCheck } from '@tabler/icons';
-import React from 'react';
+import React, { useMemo } from 'react';
 
 function CategoryEditor({ initialData, type, categories, collapse, onSubmit }) {
-  console.log(initialData);
+  const multiSelectReadOnlyStyle = useMemo(
+    () => ({
+      input: {
+        border: 'none',
+        backgroundColor: 'transparent',
+        ':hover': {
+          cursor: 'default',
+        },
+      },
+      searchInput: {
+        ':hover': {
+          cursor: 'default',
+        },
+      },
+    }),
+    []
+  );
   const form = useForm({
     initialValues: {
       id: initialData?.id,
@@ -71,6 +87,7 @@ function CategoryEditor({ initialData, type, categories, collapse, onSubmit }) {
                     return { value: e.id.toString(), label: e.name };
                   })}
                   {...form.getInputProps('parent_id')}
+                  readOnly
                 />
               </Grid.Col>
             )}
@@ -85,6 +102,7 @@ function CategoryEditor({ initialData, type, categories, collapse, onSubmit }) {
                       return { value: e.id.toString(), label: e.name };
                     })}
                     {...form.getInputProps('main_cat_id')}
+                    readOnly
                   />
                 </Grid.Col>
                 <Grid.Col span={8}>
@@ -96,6 +114,7 @@ function CategoryEditor({ initialData, type, categories, collapse, onSubmit }) {
                       return { value: e.id.toString(), label: e.name };
                     })}
                     {...form.getInputProps('parent_id')}
+                    readOnly
                   />
                 </Grid.Col>
               </>

@@ -28,7 +28,7 @@ function ProductDetails({ initialData, categories }) {
             .filter((value) => initialData?.main_cat_id?.includes(value.id))
             .map((e) => {
               return (
-                <Badge size="xs" variant="outline">
+                <Badge key={`product-detail-main-category-${e.name}`} size="xs" variant="outline">
                   {e.name}
                 </Badge>
               );
@@ -40,7 +40,7 @@ function ProductDetails({ initialData, categories }) {
             .filter((value) => initialData?.parent_cat_id?.includes(value.id))
             .map((e) => {
               return (
-                <Badge size="xs" variant="outline">
+                <Badge key={`product-detail-parent-category-${e.name}`} size="xs" variant="outline">
                   {e.name}
                 </Badge>
               );
@@ -52,7 +52,7 @@ function ProductDetails({ initialData, categories }) {
             .filter((value) => initialData?.child_cat_id?.includes(value.id))
             .map((e) => {
               return (
-                <Badge size="xs" variant="outline">
+                <Badge key={`product-detail-child-category-${e.name}`} size="xs" variant="outline">
                   {e.name}
                 </Badge>
               );

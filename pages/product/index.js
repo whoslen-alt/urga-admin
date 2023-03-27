@@ -48,11 +48,19 @@ import ExcelUploader from '../../components/ExcelUploader/ExcelUploader';
 
 const PAGE_SIZE = 15;
 
-function Product({ products, total, mainCategories, parentCategories, childCategories }) {
+function Product({
+  products,
+  total: totalProducts,
+  mainCategories,
+  parentCategories,
+  childCategories,
+  userToken,
+}) {
   const [selectedRecords, setSelectedRecords] = useState([]);
   const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(totalProducts);
+  const [records, setRecords] = useState(products);
   const [query, setQuery] = useState('');
-  const [records, setRecords] = useState(products.slice(0, PAGE_SIZE));
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [updating, setUpdating] = useState(false);
@@ -63,47 +71,42 @@ function Product({ products, total, mainCategories, parentCategories, childCateg
     useDisclosure(false);
   const [confirmationOpened, handlers] = useDisclosure(false);
   const [editingProdData, setEditingProdData] = useState();
-  const [debounced] = useDebouncedValue(query, 200);
+  const [debounced] = useDebouncedValue(query, 500);
 
   useEffect(() => {
-    const from = (page - 1) * PAGE_SIZE;
-    const to = from + PAGE_SIZE;
-    setRecords(products.slice(from, to));
-  }, [page]);
-  // useEffect(() => {
-  //   setRecords(
-  //     initialRecords.filter(({ name }) => {
-  //       if (query !== '' && !name.toLowerCase().includes(query.trim().toLowerCase())) {
-  //         return false;
-  //       }
-  //       return true;
-  //     })
-  //   );
-  // }, [query]);
-  useEffect(() => {
     handleSearch();
-  }, [query]);
-  const handleSearch = () => {
-    const from = (page - 1) * PAGE_SIZE;
-    const to = from + PAGE_SIZE;
-    if (query === '') {
-      setRecords(products.slice(from, to));
-    } else {
-      setRecords(
-        products.filter(({ name }) => {
-          if (!name.toLowerCase().includes(query.trim().toLowerCase())) {
-            return false;
-          }
-          return true;
-        })
-      );
-    }
-  };
-  const fetchPage = async () => {
+  }, [debounced]);
+  useEffect(() => {
+    setPage(1);
+  }, [handleSearch]);
+  async function handleSearch() {
     setLoading(true);
-    // const offset = pageNumber * PAGE_SIZE;
-    const res = await axios(`${process.env.NEXT_PUBLIC_API}/product/local/admin`);
+    const from = (page - 1) * PAGE_SIZE;
+    const res = await axios(
+      `${process.env.NEXT_PUBLIC_API}/product/local/admin?offset=${from}&limit=${PAGE_SIZE}&query=${debounced}`,
+      {
+        headers: {
+          Authorization: `Bearer ${userToken}`,
+        },
+      }
+    );
     setRecords(res.data.data);
+    setTotal(res.data.total);
+    setLoading(false);
+  }
+  const fetchPage = async (pageNumber) => {
+    setLoading(true);
+    const from = (pageNumber - 1) * PAGE_SIZE;
+    const res = await axios(
+      `${process.env.NEXT_PUBLIC_API}/product/local/admin?offset=${from}&limit=${PAGE_SIZE}&query=${debounced}`,
+      {
+        headers: {
+          Authorization: `Bearer ${userToken}`,
+        },
+      }
+    );
+    setRecords(res.data.data);
+    setTotal(res.data.total);
     setLoading(false);
   };
   const openProductEditingModal = (productData, type = 'edit') => {
@@ -119,7 +122,7 @@ function Product({ products, total, mainCategories, parentCategories, childCateg
     try {
       const res = await axios.delete(`${process.env.NEXT_PUBLIC_API}/admin/product/local`, {
         headers: {
-          Authorization: `Bearer ${'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyaWQiOiI3NTkzNTBlMWYzMmVmODM1ZjRkMDhjYjI5MzllOWZjOThkZDRhMDdhZDFiMzhjMjcyNmE3ZmQxMjBjOWU4NzQ5Iiwicm9sZWlkIjozMywiaWF0IjoxNjc3MzE3MTQ1LCJleHAiOjE2Nzc5MjE5NDV9.rlnMXx48AF25X58C1t2AYCEwHAXlHq1vVsvDb773q2c'}`,
+          Authorization: `Bearer ${userToken}`,
         },
         data: { product_id: id },
       });
@@ -177,7 +180,7 @@ function Product({ products, total, mainCategories, parentCategories, childCateg
 
         {
           headers: {
-            Authorization: `Bearer ${'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyaWQiOiI3NTkzNTBlMWYzMmVmODM1ZjRkMDhjYjI5MzllOWZjOThkZDRhMDdhZDFiMzhjMjcyNmE3ZmQxMjBjOWU4NzQ5Iiwicm9sZWlkIjozMywiaWF0IjoxNjc3MzE3MTQ1LCJleHAiOjE2Nzc5MjE5NDV9.rlnMXx48AF25X58C1t2AYCEwHAXlHq1vVsvDb773q2c'}`,
+            Authorization: `Bearer ${userToken}`,
           },
         }
       );
@@ -235,7 +238,7 @@ function Product({ products, total, mainCategories, parentCategories, childCateg
 
         {
           headers: {
-            Authorization: `Bearer ${'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyaWQiOiI3NTkzNTBlMWYzMmVmODM1ZjRkMDhjYjI5MzllOWZjOThkZDRhMDdhZDFiMzhjMjcyNmE3ZmQxMjBjOWU4NzQ5Iiwicm9sZWlkIjozMywiaWF0IjoxNjc3MzE3MTQ1LCJleHAiOjE2Nzc5MjE5NDV9.rlnMXx48AF25X58C1t2AYCEwHAXlHq1vVsvDb773q2c'}`,
+            Authorization: `Bearer ${userToken}`,
           },
         }
       );
@@ -276,7 +279,7 @@ function Product({ products, total, mainCategories, parentCategories, childCateg
     formData.append('img', images);
     try {
       const res = await axios.post(`${process.env.NEXT_PUBLIC_API}/product/excel?excel`, formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
+        headers: { 'Content-Type': 'multipart/form-data', Authorization: `Bearer ${userToken}` },
       });
       if (res.status === 200 && res.data?.success) {
         showNotification({
@@ -318,7 +321,7 @@ function Product({ products, total, mainCategories, parentCategories, childCateg
           close={close}
           loading={updating}
           onSubmit={editingProdData?.create ? createProduct : updateProduct}
-          categories={{ mainCategories: [], parentCategories: [], childCategories: [] }}
+          categories={{ mainCategories, parentCategories, childCategories }}
         />
         <ExcelUploader
           isOpen={excelUploaderOpened}
@@ -385,7 +388,10 @@ function Product({ products, total, mainCategories, parentCategories, childCateg
           onSelectedRecordsChange={setSelectedRecords}
           fetching={loading}
           page={page}
-          onPageChange={(p) => setPage(p)}
+          onPageChange={(pageNum) => {
+            setPage(pageNum);
+            fetchPage(pageNum);
+          }}
           totalRecords={total}
           recordsPerPage={PAGE_SIZE}
           noRecordsText="Бараа олдсонгүй"
@@ -393,7 +399,7 @@ function Product({ products, total, mainCategories, parentCategories, childCateg
             content: ({ record }) => (
               <ProductDetails
                 initialData={record}
-                categories={{ mainCategories: [], parentCategories: [], childCategories: [] }}
+                categories={{ mainCategories, parentCategories, childCategories }}
               />
             ),
           }}
@@ -406,7 +412,7 @@ function Product({ products, total, mainCategories, parentCategories, childCateg
                 product_image ? (
                   <Center>
                     <Image
-                      src={`http://${product_image?.images[0]}`}
+                      src={`http://${product_image?.images?.[0]}`}
                       alt="Зураг"
                       style={{ objectFit: 'contain' }}
                       height={60}
@@ -495,7 +501,6 @@ function Product({ products, total, mainCategories, parentCategories, childCateg
                     onClick={(e) => {
                       e.stopPropagation();
                       openProductEditingModal(record);
-                      // editInfo(company);
                     }}
                   >
                     <IconEdit size={16} />
@@ -519,34 +524,41 @@ function Product({ products, total, mainCategories, parentCategories, childCateg
   );
 }
 export const getServerSideProps = requireAuthentication(async ({ req, res }) => {
-  const response = await axios.get(`${process.env.NEXT_PUBLIC_API}/product/local/admin`, {
+  const from = 0;
+  const to = PAGE_SIZE;
+  const response = await axios.get(
+    `${process.env.NEXT_PUBLIC_API}/product/local/admin?offset=${from}&limit=${to}`,
+    {
+      headers: {
+        Authorization: `Bearer ${req.cookies.urga_admin_user_jwt}`,
+      },
+    }
+  );
+
+  const mainCats = await axios.get(`${process.env.NEXT_PUBLIC_API}/admin/category/main`, {
     headers: {
       Authorization: `Bearer ${req.cookies.urga_admin_user_jwt}`,
     },
   });
-  // const mainCats = await axios.get(`${process.env.NEXT_PUBLIC_API}/admin/category/main`, {
-  //   headers: {
-  //     Authorization: `Bearer ${'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyaWQiOiI3NTkzNTBlMWYzMmVmODM1ZjRkMDhjYjI5MzllOWZjOThkZDRhMDdhZDFiMzhjMjcyNmE3ZmQxMjBjOWU4NzQ5Iiwicm9sZWlkIjozMywiaWF0IjoxNjc3MzE3MTQ1LCJleHAiOjE2Nzc5MjE5NDV9.rlnMXx48AF25X58C1t2AYCEwHAXlHq1vVsvDb773q2c'}`,
-  //   },
-  // });
-  // const parentCats = await axios.get(`${process.env.NEXT_PUBLIC_API}/admin/category/parent`, {
-  //   headers: {
-  //     Authorization: `Bearer ${'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyaWQiOiI3NTkzNTBlMWYzMmVmODM1ZjRkMDhjYjI5MzllOWZjOThkZDRhMDdhZDFiMzhjMjcyNmE3ZmQxMjBjOWU4NzQ5Iiwicm9sZWlkIjozMywiaWF0IjoxNjc3MzE3MTQ1LCJleHAiOjE2Nzc5MjE5NDV9.rlnMXx48AF25X58C1t2AYCEwHAXlHq1vVsvDb773q2c'}`,
-  //   },
-  // });
-  // const childCats = await axios.get(`${process.env.NEXT_PUBLIC_API}/admin/category/child`, {
-  //   headers: {
-  //     Authorization: `Bearer ${'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyaWQiOiI3NTkzNTBlMWYzMmVmODM1ZjRkMDhjYjI5MzllOWZjOThkZDRhMDdhZDFiMzhjMjcyNmE3ZmQxMjBjOWU4NzQ5Iiwicm9sZWlkIjozMywiaWF0IjoxNjc3MzE3MTQ1LCJleHAiOjE2Nzc5MjE5NDV9.rlnMXx48AF25X58C1t2AYCEwHAXlHq1vVsvDb773q2c'}`,
-  //   },
-  // });
+  const parentCats = await axios.get(`${process.env.NEXT_PUBLIC_API}/admin/category/parent`, {
+    headers: {
+      Authorization: `Bearer ${req.cookies.urga_admin_user_jwt}`,
+    },
+  });
+  const childCats = await axios.get(`${process.env.NEXT_PUBLIC_API}/admin/category/child`, {
+    headers: {
+      Authorization: `Bearer ${req.cookies.urga_admin_user_jwt}`,
+    },
+  });
 
   return {
     props: {
       products: response.data.data,
-      // mainCategories: mainCats.data.data,
-      // parentCategories: parentCats.data.data,
-      // childCategories: childCats.data.data,
+      mainCategories: mainCats.data.data,
+      parentCategories: parentCats.data.data,
+      childCategories: childCats.data.data,
       total: response.data.total,
+      userToken: req.cookies.urga_admin_user_jwt,
     },
   };
 });
