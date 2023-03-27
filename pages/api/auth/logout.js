@@ -10,7 +10,7 @@ export default async function handler(req, res) {
   } else {
     const serialised = serialize('urga_admin_user_jwt', null, {
       httpOnly: true,
-      secure: process.env.NODE_ENV !== 'development',
+      // secure: process.env.NODE_ENV !== 'development',
       sameSite: 'strict',
       maxAge: -1,
       path: '/',
