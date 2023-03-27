@@ -11,7 +11,7 @@ export default async function handler(req, res) {
       const userToken = result.data.token;
       const serialised = serialize('urga_admin_user_jwt', userToken, {
         httpOnly: true,
-        secure: process.env.NODE_ENV !== 'development',
+        // secure: process.env.NODE_ENV !== 'development',
         sameSite: 'strict',
         maxAge: 60 * 60 * 24 * 30,
         path: '/',
