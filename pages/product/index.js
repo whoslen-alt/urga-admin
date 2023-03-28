@@ -412,7 +412,7 @@ function Product({
                 product_image ? (
                   <Center>
                     <Image
-                      src={`http://${product_image?.images?.[0]}`}
+                      src={`${product_image?.images?.[0]}`}
                       alt="Зураг"
                       style={{ objectFit: 'contain' }}
                       height={60}
