@@ -10,6 +10,10 @@ module.exports = {
         protocol: 'http',
         hostname: '3.0.91.173',
       },
+      {
+        protocol: 'http',
+        hostname: '103.168.56.230',
+      },
     ],
   },
   webpack(config) {
