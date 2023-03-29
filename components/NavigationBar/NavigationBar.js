@@ -10,7 +10,7 @@ function NavigationBar({ isOpen }) {
   const router = useRouter();
   const handleLogout = async () => {
     axios
-      .get('api/auth/logout')
+      .get('api/authentication/logout')
       .then((value) => {
         router.reload();
       })

@@ -31,7 +31,7 @@ export default function Login() {
   });
   const handleLogin = async ({ username, password }) => {
     axios
-      .post('/api/auth/login', { username, password })
+      .post('/api/authentication/login', { username, password })
       .then((value) => {
         if (value.status === 200) {
           router.push('/');
