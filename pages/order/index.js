@@ -14,11 +14,19 @@ import {
   Tooltip,
   Popover,
   Radio,
+  NativeSelect,
 } from '@mantine/core';
 import { DataTable } from 'mantine-datatable';
 import { useState, useEffect, useMemo } from 'react';
 import DefaultLayout from '../../components/Layouts/DefaultLayout';
-import { IconCalendarTime, IconCheck, IconCopy, IconEye, IconSearch } from '@tabler/icons';
+import {
+  IconCalendarTime,
+  IconCheck,
+  IconCopy,
+  IconEye,
+  IconFilter,
+  IconSearch,
+} from '@tabler/icons';
 import axios from 'axios';
 import { useDebouncedValue, useDisclosure } from '@mantine/hooks';
 import Image from 'next/image';
@@ -51,6 +59,7 @@ function Order({ orders, total: totalOrders, userToken }) {
     })
   );
   const [dates, setDates] = useState([dayjs().subtract(7, 'days'), dayjs()]);
+  const [orderFilterValue, setOrderFilterValue] = useState('all');
   const [expandedRecordIds, setExpandedRecordIds] = useState([]);
   const orderStatuses = useMemo(() => orderStatus, []);
   const form = useForm({
@@ -65,6 +74,10 @@ function Order({ orders, total: totalOrders, userToken }) {
   useEffect(() => {
     fetchPage(page);
   }, [dates]);
+
+  useEffect(() => {
+    fetchPage(1);
+  }, [orderFilterValue]);
 
   useEffect(() => {
     handleSearch();
@@ -148,7 +161,9 @@ function Order({ orders, total: totalOrders, userToken }) {
         dateFormat
       )}&untilDate=${dayjs(dates?.[1]).format(
         dateFormat
-      )}&offset=${from}&limit=${PAGE_SIZE}&orderid=${debounced}`,
+      )}&offset=${from}&limit=${PAGE_SIZE}&orderid=${debounced}&status=${
+        orderFilterValue === 'all' ? '' : orderFilterValue
+      }`,
       {
         headers: {
           Authorization: `Bearer ${userToken}`,
@@ -296,7 +311,35 @@ function Order({ orders, total: totalOrders, userToken }) {
             { accessor: 'note', title: 'Тэмдэглэл' },
             {
               accessor: 'status',
-              title: 'Төлөв',
+              title: (
+                <Group position="center">
+                  <Text>Төлөв</Text>
+                  <Popover position="bottom" withArrow shadow="md">
+                    <Popover.Target>
+                      <ActionIcon radius="xl">
+                        <IconFilter size="1.125rem" />
+                      </ActionIcon>
+                    </Popover.Target>
+                    <Popover.Dropdown>
+                      <Radio.Group value={orderFilterValue} onChange={setOrderFilterValue}>
+                        <Stack>
+                          <Radio value="all" label="Бүгд" size="xs" />
+                          {Object.keys(orderStatuses).map((e, i) => {
+                            return (
+                              <Radio
+                                key={`order-status-filter-radio-${i}`}
+                                value={e}
+                                label={orderStatuses[e].status}
+                                size="xs"
+                              />
+                            );
+                          })}
+                        </Stack>
+                      </Radio.Group>
+                    </Popover.Dropdown>
+                  </Popover>
+                </Group>
+              ),
               render: ({ status }) => (
                 <Badge color={orderStatuses[status].color}> {orderStatuses[status].status}</Badge>
               ),

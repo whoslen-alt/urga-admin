@@ -231,8 +231,8 @@ function Product({
           wholesale_price: values.wholesale_price,
           wholesale_qty: values.wholesale_qty,
           images: [
-            'https://wp.dailybruin.com/images/2018/10/web.ae_.trench.review.courtesy.jpg',
-            'https://www.seekpng.com/png/detail/417-4172893_transparent-twenty-one-pilots-self-titled-album-cover.png',
+            // 'https://wp.dailybruin.com/images/2018/10/web.ae_.trench.review.courtesy.jpg',
+            // 'https://www.seekpng.com/png/detail/417-4172893_transparent-twenty-one-pilots-self-titled-album-cover.png',
           ],
         },
 

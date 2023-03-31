@@ -22,6 +22,11 @@ export default async function handler(req, res) {
       res.status(result.status).json({ success: false });
     }
   } catch (err) {
-    res.status(500).json({ error: err, message: err.response.data.message });
+    if (err.response) {
+      res.status(500).json({ error: err, message: err.response.data.message });
+      return;
+    }
+    console.log(err);
+    res.status(500).json({ error: err, message: err.message });
   }
 }

@@ -189,7 +189,7 @@ function User({ users, total: totalUsers, userToken }) {
           }}
           totalRecords={total}
           recordsPerPage={PAGE_SIZE}
-          noRecordsText="Бараа олдсонгүй"
+          noRecordsText="Бүртгэгдсэн хэрэглэгч олдсонгүй"
           idAccessor="userid"
           columns={[
             {
