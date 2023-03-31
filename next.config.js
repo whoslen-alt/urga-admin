@@ -14,6 +14,10 @@ module.exports = {
         protocol: 'http',
         hostname: '103.168.56.230',
       },
+      {
+	protocol: 'https',
+	hostname: 'api.urga.mn',
+      }
     ],
   },
   webpack(config) {
