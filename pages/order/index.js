@@ -87,31 +87,34 @@ function Order({ orders, total: totalOrders, userToken }) {
     setPage(1);
   }, [handleSearch]);
   async function handleSearch() {
-    setLoading(true);
-    const from = (page - 1) * PAGE_SIZE;
-    const res = await axios.get(
-      `${process.env.NEXT_PUBLIC_API}/admin/order/local?fromDate=${dayjs(dates?.[0]).format(
-        dateFormat
-      )}&untilDate=${dayjs(dates?.[1]).format(
-        dateFormat
-      )}&offset=${from}&limit=${PAGE_SIZE}&orderid=${debounced}`,
-      {
-        headers: {
-          Authorization: `Bearer ${userToken}`,
-        },
-      }
-    );
-    setRecords(res.data.data);
-    setTotal(res.data?.data?.length);
-    setLoading(false);
+    try {
+      setLoading(true);
+      const from = (page - 1) * PAGE_SIZE;
+      const res = await axios.get(
+        `${process.env.NEXT_PUBLIC_API}/admin/order/local?from=${dayjs(dates?.[0]).format(
+          dateFormat
+        )}&to=${dayjs(dates?.[1]).format(
+          dateFormat
+        )}&offset=${from}&limit=${PAGE_SIZE}&orderid=${debounced}`,
+        {
+          headers: {
+            Authorization: `Bearer ${userToken}`,
+          },
+        }
+      );
+      setRecords(res.data.data);
+      setTotal(res.data?.total);
+      setLoading(false);
+    } catch (e) {}
   }
   const updateOrderStatus = async (orderId, initialStatus, orderStatus) => {
     const title = 'Захиалгын төлөв шинэчлэлт';
     const currentPopovers = [...popovers];
     const updatedOrderPopover = currentPopovers.find((element) => element.id === orderId);
-    updatedOrderPopover.isOpen = false;
-
-    if (initialStatus.toString() === orderStatus) {
+    if (updatedOrderPopover) {
+      updatedOrderPopover.isOpen = false;
+    }
+    if (initialStatus?.toString() === orderStatus) {
       setPopovers(currentPopovers);
       return;
     }
@@ -154,25 +157,27 @@ function Order({ orders, total: totalOrders, userToken }) {
   };
 
   const fetchPage = async (pageNumber) => {
-    setLoading(true);
-    const from = (pageNumber - 1) * PAGE_SIZE;
-    const res = await axios.get(
-      `${process.env.NEXT_PUBLIC_API}/admin/order/local?fromDate=${dayjs(dates?.[0]).format(
-        dateFormat
-      )}&untilDate=${dayjs(dates?.[1]).format(
-        dateFormat
-      )}&offset=${from}&limit=${PAGE_SIZE}&orderid=${debounced}&status=${
-        orderFilterValue === 'all' ? '' : orderFilterValue
-      }`,
-      {
-        headers: {
-          Authorization: `Bearer ${userToken}`,
-        },
-      }
-    );
-    setRecords(res.data.data);
-    setTotal(res.data?.data?.length);
-    setLoading(false);
+    try {
+      setLoading(true);
+      const from = (pageNumber - 1) * PAGE_SIZE;
+      const res = await axios.get(
+        `${process.env.NEXT_PUBLIC_API}/admin/order/local?from=${dayjs(dates?.[0]).format(
+          dateFormat
+        )}&to=${dayjs(dates?.[1]).format(
+          dateFormat
+        )}&offset=${from}&limit=${PAGE_SIZE}&orderid=${debounced}&status=${
+          orderFilterValue === 'all' ? '' : orderFilterValue
+        }`,
+        {
+          headers: {
+            Authorization: `Bearer ${userToken}`,
+          },
+        }
+      );
+      setRecords(res.data.data);
+      setTotal(res.data?.total);
+      setLoading(false);
+    } catch (e) {}
   };
 
   return (
@@ -378,14 +383,16 @@ function Order({ orders, total: totalOrders, userToken }) {
                     </ActionIcon>
                   </Tooltip>
                   <Popover
-                    opened={popovers.find((e) => e.id === orderid).isOpen}
+                    opened={popovers?.find((e) => e?.id === orderid)?.isOpen}
                     onChange={(opened) => {
                       const currentPopovers = [...popovers];
-                      const targetPopover = currentPopovers.find(
-                        (element) => element.id === orderid
+                      const targetPopover = currentPopovers?.find(
+                        (element) => element?.id === orderid
                       );
-                      targetPopover.isOpen = opened;
-                      setPopovers(currentPopovers);
+                      if (targetPopover) {
+                        targetPopover.isOpen = opened;
+                        setPopovers(currentPopovers);
+                      }
                     }}
                     position="bottom"
                     withArrow
@@ -404,7 +411,7 @@ function Order({ orders, total: totalOrders, userToken }) {
                         onClick={(e) => {
                           e.stopPropagation();
                           const currentPopovers = [...popovers];
-                          const targetPopover = currentPopovers.find(
+                          const targetPopover = currentPopovers?.find(
                             (element) => element.id === orderid
                           );
                           targetPopover.isOpen = !targetPopover.isOpen;
@@ -461,28 +468,37 @@ function Order({ orders, total: totalOrders, userToken }) {
 }
 
 export const getServerSideProps = requireAuthentication(async ({ req, res }) => {
-  const from = 0;
-  const to = PAGE_SIZE;
-  const dateFormat = 'YYYY-MM-DD';
-  const initialDates = [dayjs().subtract(7, 'days'), dayjs()];
-  const response = await axios.get(
-    `${process.env.NEXT_PUBLIC_API}/admin/order/local?fromDate=${initialDates[0].format(
-      dateFormat
-    )}&untilDate=${initialDates[1].format(dateFormat)}?offset=${from}&limit=${to}`,
-    {
-      headers: {
-        Authorization: `Bearer ${req.cookies.urga_admin_user_jwt}`,
+  try {
+    const from = 0;
+    const to = PAGE_SIZE;
+    const dateFormat = 'YYYY-MM-DD';
+    const initialDates = [dayjs().subtract(7, 'days'), dayjs()];
+    const response = await axios.get(
+      `${process.env.NEXT_PUBLIC_API}/admin/order/local?from=${initialDates[0].format(
+        dateFormat
+      )}&to=${initialDates[1].format(dateFormat)}?offset=${from}&limit=${to}`,
+      {
+        headers: {
+          Authorization: `Bearer ${req.cookies.urga_admin_user_jwt}`,
+        },
+      }
+    );
+    return {
+      props: {
+        orders: response.data?.data,
+        total: res.data.total,
+        userToken: req.cookies.urga_admin_user_jwt,
       },
-    }
-  );
-  return {
-    props: {
-      orders: response.data?.data,
-      // total: res.data.total,
-      total: response?.data?.data?.length,
-      userToken: req.cookies.urga_admin_user_jwt,
-    },
-  };
+    };
+  } catch (e) {
+    return {
+      props: {
+        orders: [],
+        total: 0,
+        userToken: req.cookies.urga_admin_user_jwt,
+      },
+    };
+  }
 });
 
 export default Order;

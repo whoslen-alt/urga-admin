@@ -11,6 +11,7 @@ import {
   Group,
   Text,
   LoadingOverlay,
+  Select,
 } from '@mantine/core';
 
 import { isNotEmpty, useForm } from '@mantine/form';
@@ -35,11 +36,13 @@ function ProductModal({ initialData, isOpen, close, categories, onSubmit, loadin
       wholesale_price: initialData?.wholesale_price,
       wholesale_qty: initialData?.wholesale_qty,
       images: '',
+      active: initialData?.active,
     },
     validate: {
       name: (value) => (value ? null : 'Нэр оруулна уу'),
     },
   });
+
   useEffect(() => {
     form.setValues(initialData);
     return () => {
@@ -63,14 +66,24 @@ function ProductModal({ initialData, isOpen, close, categories, onSubmit, loadin
         onSubmit={form.onSubmit(async (values, e) => {
           const a = await onSubmit(values);
           form.setValues(initialData);
-          console.log('a');
           close();
         })}
       >
         <Group position="center">
           <Grid>
-            <Grid.Col span={12} xs={12}>
+            <Grid.Col span={9} xs={9}>
               <TextInput label="Барааны нэр" {...form.getInputProps('name')} size="xs" />
+            </Grid.Col>
+            <Grid.Col span={3} xs={3}>
+              <Select
+                label="Идэвхитэй эсэх"
+                data={[
+                  { label: 'Идэвхитэй', value: true },
+                  { label: 'Идэвхигүй', value: false },
+                ]}
+                {...form.getInputProps('active')}
+                size="xs"
+              />
             </Grid.Col>
             <Grid.Col span={4} xs={4}>
               <MultiSelect

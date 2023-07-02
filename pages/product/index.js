@@ -40,7 +40,6 @@ import ProductDetails from '../../components/ProductDetails/ProductDetails';
 import { useDebouncedValue, useDisclosure } from '@mantine/hooks';
 import ProductModal from '../../components/ProductModal/ProductModal';
 import Image from 'next/image';
-import { modals } from '@mantine/modals';
 import { DeleteConfirmationDialog } from '../../components/DeleteConfirmationDialog/DeleteConfirmationDialog';
 import { showNotification } from '@mantine/notifications';
 import requireAuthentication from '../../lib/requireAuthentication';
@@ -133,7 +132,7 @@ function Product({
           color: 'green',
           icon: <IconCheck />,
         });
-        await fetchPage();
+        await fetchPage(1);
       } else {
         showNotification({
           title: 'Бараа устгалт',
@@ -191,7 +190,7 @@ function Product({
           color: 'green',
           icon: <IconCheck />,
         });
-        await fetchPage();
+        await fetchPage(1);
       } else {
         showNotification({
           title,
@@ -234,6 +233,7 @@ function Product({
             // 'https://wp.dailybruin.com/images/2018/10/web.ae_.trench.review.courtesy.jpg',
             // 'https://www.seekpng.com/png/detail/417-4172893_transparent-twenty-one-pilots-self-titled-album-cover.png',
           ],
+          active: values.active,
         },
 
         {
@@ -249,7 +249,7 @@ function Product({
           color: 'green',
           icon: <IconCheck />,
         });
-        await fetchPage();
+        await fetchPage(1);
       } else {
         showNotification({
           title,
@@ -409,7 +409,7 @@ function Product({
               title: 'Зураг',
               width: 100,
               render: ({ product_image }) =>
-                product_image ? (
+                product_image?.images?.[0] ? (
                   <Center>
                     <Image
                       src={`${product_image?.images?.[0]}`}

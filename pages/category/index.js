@@ -331,7 +331,6 @@ function Category({ mainCats, parentCats, childCats, userToken }) {
                     Ангилал Үүсгэх
                   </Button>
                 </Menu.Target>
-
                 <Menu.Dropdown>
                   <Menu.Label>Ямар ангилал үүсгэх вэ?</Menu.Label>
                   <Menu.Item onClick={() => useCategoryModal('main')}>Ерөнхий ангилал</Menu.Item>
@@ -430,7 +429,6 @@ function Category({ mainCats, parentCats, childCats, userToken }) {
                       </Badge>
                     ),
                   },
-
                   {
                     accessor: 'createdAt',
                     title: 'Үүсгэсэн огноо',
