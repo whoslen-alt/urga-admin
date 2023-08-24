@@ -247,34 +247,34 @@ function User({ users, total: totalUsers, userToken }) {
                 <Text>{dayjs(createdAt).format('YYYY-MM-DD HH:MM:ss')}</Text>
               ),
             },
-            // {
-            //   accessor: 'actions',
-            //   title: <Text>Үйлдэл</Text>,
-            //   textAlignment: 'center',
-            //   width: 80,
-            //   render: ({ userid, username }) => (
-            //     <Group spacing={4} noWrap>
-            //       <ActionIcon
-            //         color="blue"
-            //         onClick={(e) => {
-            //           e.stopPropagation();
-            //           // openProductEditingModal(record);
-            //         }}
-            //       >
-            //         <IconEdit size={16} />
-            //       </ActionIcon>
-            //       <ActionIcon
-            //         color="red"
-            //         onClick={(e) => {
-            //           e.stopPropagation();
-            //           openDeleteConfirmation(userid, username);
-            //         }}
-            //       >
-            //         <IconTrash size={16} />
-            //       </ActionIcon>
-            //     </Group>
-            //   ),
-            // },
+            {
+              accessor: 'actions',
+              title: <Text>Үйлдэл</Text>,
+              textAlignment: 'center',
+              width: 80,
+              render: ({ userid, username }) => (
+                <Group spacing={4} noWrap>
+                  <ActionIcon
+                    color="blue"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      // openProductEditingModal(record);
+                    }}
+                  >
+                    <IconEdit size={16} />
+                  </ActionIcon>
+                  <ActionIcon
+                    color="red"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      openDeleteConfirmation(userid, username);
+                    }}
+                  >
+                    <IconTrash size={16} />
+                  </ActionIcon>
+                </Group>
+              ),
+            },
           ]}
         />
       </Container>
