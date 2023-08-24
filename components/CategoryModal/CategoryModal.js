@@ -1,8 +1,11 @@
-import { Button, Group, Modal, Select, Stack, Text, TextInput } from '@mantine/core';
-import { useMemo } from 'react';
+import Image from 'next/image';
+import { Button, Group, Modal, Select, Stack, Text, FileInput, TextInput } from '@mantine/core';
+import { useMemo, useState } from 'react';
 import { isNotEmpty, useForm } from '@mantine/form';
+import { IconX } from '@tabler/icons';
 
 export function CategoryModal({ opened, close, type, creating, onSubmit, categories }) {
+  const [currentImage, setCurrenImage] = useState('');
   const form = useForm({
     initialValues: {
       name: '',
@@ -23,6 +26,17 @@ export function CategoryModal({ opened, close, type, creating, onSubmit, categor
     }),
     []
   );
+
+  const handleDropImage = (files) => {
+    if (files) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        setCurrenImage(reader.result);
+      };
+      reader.readAsDataURL(files);
+    }
+  };
+
   const handleSubmit = async (fields) => {
     await onSubmit(fields, type);
     form.reset();
@@ -31,6 +45,7 @@ export function CategoryModal({ opened, close, type, creating, onSubmit, categor
     form.reset();
     close();
   };
+
   return (
     <Modal
       opened={opened}
@@ -60,6 +75,19 @@ export function CategoryModal({ opened, close, type, creating, onSubmit, categor
               {...form.getInputProps('main_cat_id')}
             />
           )}
+          {type === 'parent' && (
+            <FileInput
+              {...form.getInputProps('upload_image')}
+              label="Icon зураг оруулах"
+              onChange={(value) => {
+                handleDropImage(value);
+                if (form.getInputProps(`upload_image`).onChange)
+                  form.getInputProps(`upload_image`).onChange(value);
+              }}
+              placeholder="png, jpg зураг оруулна уу!"
+              accept="image/png,image/jpeg"
+            />
+          )}
           {type === 'child' && (
             <Select
               label="Дэд ангилал"
@@ -73,6 +101,22 @@ export function CategoryModal({ opened, close, type, creating, onSubmit, categor
               {...form.getInputProps('parent_cat_id')}
             />
           )}
+
+          {currentImage ? (
+            <Group position="center">
+              <Image src={currentImage} alt="Uploaded Preview" width={150} height={150} />
+              <Button
+                variant="light"
+                onClick={() => setCurrenImage(null)}
+                radius="lg"
+                w="100%"
+                color="red"
+                leftIcon={<IconX size={16} />}
+              >
+                Арилгах
+              </Button>
+            </Group>
+          ) : null}
         </Stack>
         <Group position="right" mt="xl">
           <Button variant="subtle" radius="xl" onClick={handleClose}>
