@@ -1,10 +1,7 @@
 import {
   Container,
   Grid,
-  Title,
   Tabs,
-  Box,
-  MediaQuery,
   Card,
   Image,
   Text,
@@ -14,12 +11,11 @@ import {
   Flex,
   Indicator,
   ActionIcon,
-  Chip,
   TextInput,
   Menu,
-  Modal,
   MultiSelect,
   Stack,
+  FileInput,
   Select,
   LoadingOverlay,
   Popover,
@@ -29,15 +25,7 @@ import { DataTable } from 'mantine-datatable';
 import { useState, useEffect, useMemo } from 'react';
 import { useDisclosure } from '@mantine/hooks';
 import DefaultLayout from '../../components/Layouts/DefaultLayout';
-import {
-  IconCheck,
-  IconEdit,
-  IconPlus,
-  IconSearch,
-  IconTrash,
-  IconUsers,
-  IconX,
-} from '@tabler/icons';
+import { IconCheck, IconEdit, IconTrash, IconX } from '@tabler/icons';
 import { CategoryModal } from '../../components/CategoryModal/CategoryModal';
 import dayjs from 'dayjs';
 import { DeleteConfirmationDialog } from '../../components/DeleteConfirmationDialog/DeleteConfirmationDialog';
@@ -59,6 +47,8 @@ function Category({ mainCats, parentCats, childCats, userToken }) {
     },
   });
   const [activeTab, setActiveTab] = useState('main');
+
+  const [image, setImage] = useState('');
 
   const [mainCategories, setMainCategories] = useState([]);
   const [parentCategories, setParentCategories] = useState([]);
@@ -125,6 +115,21 @@ function Category({ mainCats, parentCats, childCats, userToken }) {
     setDeletingCategoryData({ id: categoryId, name: categoryName });
     handler.open();
   };
+
+  const handleDropImage = (files) => {
+    if (files) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        setImage(reader.result);
+      };
+      reader.readAsDataURL(files);
+    }
+  };
+
+  const handleClearImage = () => {
+    setImage(null);
+  };
+
   const fetchAllCategories = async () => {
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API}/category/all?type=separate`);
@@ -140,18 +145,28 @@ function Category({ mainCats, parentCats, childCats, userToken }) {
   };
   const createCategory = async (values, categoryType) => {
     setCreating(true);
+    const formData = new FormData();
+
+    formData.append('name', values.name);
+    formData.append('main_cat_id', values.main_cat_id);
+    formData.append('upload_image', values.upload_image, values.upload_image.name);
+
+    let body = {
+      name: values.name,
+      main_cat_id: values.main_cat_id,
+    };
+
+    if (categoryType === 'parent') {
+      body = formData; // Assign the formData directly
+    } else if (categoryType === 'child') {
+      body.parent_id = values.parent_id;
+    }
+
     const title = 'Ангилал үүсгэлт';
     try {
       const res = await axios.post(
         `${process.env.NEXT_PUBLIC_API}/admin/category/${categoryType}`,
-        {
-          name: values.name,
-          ...(categoryType === 'parent'
-            ? { main_cat_id: values.main_cat_id }
-            : categoryType === 'child'
-            ? { main_cat_id: values.main_cat_id, parent_id: values.parent_id }
-            : {}),
-        },
+        body,
         {
           headers: {
             Authorization: `Bearer ${userToken}`,
@@ -236,25 +251,56 @@ function Category({ mainCats, parentCats, childCats, userToken }) {
     setDeleting(false);
     handler.close();
   };
+
   const updateCategory = async (values) => {
+    console.log(values);
     setUpdating(true);
+
     const title = 'Ангилал шинэчлэлт';
+
+    const formData = new FormData();
+
+    formData.append('name', values.name);
+    formData.append('parent_id', values.id);
+    formData.append('main_cat_id', values.main_cat_id);
+    formData.append('upload_image', values.upload_image, values.upload_image.name);
+
+    let body = {
+      name: values.name,
+      active: values.active,
+    };
+
+    if (activeTab === 'main') {
+      body.main_id = values.id;
+    } else if (activeTab === 'parent') {
+      body = formData; // Assign the formData directly
+    } else {
+      body.child_id = values.id;
+      body.parent_id = values.parent_id;
+      body.main_cat_id = values.main_cat_id;
+    }
+
     try {
       const res = await axios.put(
         `${process.env.NEXT_PUBLIC_API}/admin/category/${activeTab}`,
-        {
-          name: values.name,
-          active: values.active,
-          ...(activeTab === 'main'
-            ? { main_id: values.id }
-            : activeTab === 'parent'
-            ? { parent_id: values.id, main_cat_id: values.main_cat_id }
-            : {
-                child_id: values.id,
-                parent_id: values.parent_id,
-                main_cat_id: values.main_cat_id,
-              }),
-        },
+        body,
+        // {
+        //   name: values.name,
+        //   active: values.active,
+        //   ...(activeTab === 'main'
+        //     ? { main_id: values.id }
+        //     : activeTab === 'parent'
+        //     ? {
+        //         parent_id: values.id,
+        //         main_cat_id: values.main_cat_id,
+        //         upload_image: formData,
+        //       }
+        //     : {
+        //         child_id: values.id,
+        //         parent_id: values.parent_id,
+        //         main_cat_id: values.main_cat_id,
+        //       }),
+        // },
         {
           headers: {
             Authorization: `Bearer ${userToken}`,
@@ -268,6 +314,7 @@ function Category({ mainCats, parentCats, childCats, userToken }) {
           color: 'green',
           icon: <IconCheck />,
         });
+        setImage('');
         await fetchAllCategories();
       } else {
         showNotification({
@@ -289,6 +336,7 @@ function Category({ mainCats, parentCats, childCats, userToken }) {
     setType(type);
     open();
   };
+
   const [deletingCategoryData, setDeletingCategoryData] = useState({});
   return (
     <DefaultLayout>
@@ -507,11 +555,13 @@ function Category({ mainCats, parentCats, childCats, userToken }) {
                       >
                         {beingEditedCategory === parentCategory.id ? (
                           <form
-                            onSubmit={form.onSubmit((values) =>
+                            onSubmit={form.onSubmit((values) => {
                               updating
                                 ? null
-                                : updateCategory(values).finally(() => setBeingEditedCategory(null))
-                            )}
+                                : updateCategory(values).finally(() =>
+                                    setBeingEditedCategory(null)
+                                  );
+                            })}
                           >
                             <Stack pos="relative">
                               <LoadingOverlay visible={updating} overlayBlur={2} />
@@ -531,6 +581,39 @@ function Category({ mainCats, parentCats, childCats, userToken }) {
                                 })}
                                 {...form.getInputProps('main_cat_id')}
                               />
+                              <FileInput
+                                {...form.getInputProps('upload_image')}
+                                label="Icon зураг оруулах"
+                                onChange={(value) => {
+                                  handleDropImage(value);
+                                  if (form.getInputProps(`upload_image`).onChange)
+                                    form.getInputProps(`upload_image`).onChange(value);
+                                }}
+                                placeholder="png, jpg зураг оруулна уу!"
+                                accept="image/png,image/jpeg"
+                              />
+
+                              {image ? (
+                                <Group position="center">
+                                  <Image
+                                    src={image}
+                                    alt="Uploaded Preview"
+                                    width={150}
+                                    height={150}
+                                  />
+                                  <Button
+                                    variant="light"
+                                    onClick={handleClearImage}
+                                    radius="lg"
+                                    w="100%"
+                                    color="red"
+                                    leftIcon={<IconX size={16} />}
+                                  >
+                                    Арилгах
+                                  </Button>
+                                </Group>
+                              ) : null}
+
                               <Stack mt={10} spacing={14}>
                                 <Group position="apart">
                                   <Text size="sm">Хамаарах ангилалууд</Text>
