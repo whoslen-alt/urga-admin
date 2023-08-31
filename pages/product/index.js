@@ -320,6 +320,7 @@ function Product({
           isOpen={opened}
           close={close}
           loading={updating}
+          userToken={userToken}
           onSubmit={editingProdData?.create ? createProduct : updateProduct}
           categories={{ mainCategories, parentCategories, childCategories }}
         />
