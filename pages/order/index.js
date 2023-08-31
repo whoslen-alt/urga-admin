@@ -472,7 +472,7 @@ export const getServerSideProps = requireAuthentication(async ({ req, res }) => 
     const from = 0;
     const to = PAGE_SIZE;
     const dateFormat = 'YYYY-MM-DD';
-    const initialDates = [dayjs().subtract(7, 'days'), dayjs()];
+    // const initialDates = [dayjs().subtract(7, 'days'), dayjs()];
     const response = await axios.get(
       `${process.env.NEXT_PUBLIC_API}/admin/order/local?from=${initialDates[0].format(
         dateFormat
@@ -486,7 +486,7 @@ export const getServerSideProps = requireAuthentication(async ({ req, res }) => 
     return {
       props: {
         orders: response.data?.data,
-        total: res.data.total,
+        total: response.data.total,
         userToken: req.cookies.urga_admin_user_jwt,
       },
     };

@@ -9,6 +9,7 @@ import {
   Textarea,
   TextInput,
   Group,
+  FileInput,
   Text,
   LoadingOverlay,
   Select,
@@ -16,9 +17,12 @@ import {
 
 import { isNotEmpty, useForm } from '@mantine/form';
 import { useDisclosure } from '@mantine/hooks';
+import { showNotification } from '@mantine/notifications';
 import { IconArrowBack, IconCheck } from '@tabler/icons';
-import { useEffect } from 'react';
-function ProductModal({ initialData, isOpen, close, categories, onSubmit, loading }) {
+import axios from 'axios';
+import { useEffect, useState } from 'react';
+
+function ProductModal({ initialData, isOpen, close, categories, onSubmit, loading, userToken }) {
   const form = useForm({
     initialValues: {
       name: initialData?.name,
@@ -37,11 +41,44 @@ function ProductModal({ initialData, isOpen, close, categories, onSubmit, loadin
       wholesale_qty: initialData?.wholesale_qty,
       images: '',
       active: initialData?.active,
+      product_image: initialData?.product_image || [],
     },
     validate: {
       name: (value) => (value ? null : 'Нэр оруулна уу'),
     },
   });
+
+  const handleUpload = async (files) => {
+    const formData = new FormData();
+
+    if (files) {
+      for (const file of files) {
+        formData.append('img', file, `product/${file.name}`);
+      }
+    }
+
+    try {
+      const res = await axios.post(`${process.env.NEXT_PUBLIC_API}/admin/upload`, formData, {
+        headers: {
+          Authorization: `Bearer ${userToken}`,
+        },
+      });
+
+      if (res.status === 200) {
+        form.setFieldValue('product_image', [res.data.data]); // Update the field value here
+
+        console.log(res.data.data);
+      } else {
+        showNotification({
+          title: title + ' амжилтгүй',
+          message: res.data.message,
+          color: 'red',
+        });
+      }
+    } catch (err) {
+      console.error('Зураг оруулах явцад алдаа гарлаа. Алдаа: ' + err);
+    }
+  };
 
   useEffect(() => {
     form.setValues(initialData);
@@ -203,6 +240,20 @@ function ProductModal({ initialData, isOpen, close, categories, onSubmit, loadin
                 maxRows={4}
                 size="xs"
                 {...form.getInputProps('detailed_description')}
+              />
+            </Grid.Col>
+            <Grid.Col span={12}>
+              <FileInput
+                size="xs"
+                onChange={(value, e) => {
+                  handleUpload(value);
+                  // if (form.getInputProps(`product_image`).onChange)
+                  //   form.getInputProps(`product_image`).onChange(value);
+                }}
+                // {...form.getInputProps('product_image')}
+                label="Барааны зураг оруулах"
+                placeholder="3 аас дээшгүй зураг оруулна уу!"
+                multiple
               />
             </Grid.Col>
             <Grid.Col span={12}>

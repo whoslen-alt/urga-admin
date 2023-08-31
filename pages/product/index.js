@@ -320,6 +320,7 @@ function Product({
           isOpen={opened}
           close={close}
           loading={updating}
+          userToken={userToken}
           onSubmit={editingProdData?.create ? createProduct : updateProduct}
           categories={{ mainCategories, parentCategories, childCategories }}
         />
@@ -392,6 +393,7 @@ function Product({
             setPage(pageNum);
             fetchPage(pageNum);
           }}
+          x
           totalRecords={total}
           recordsPerPage={PAGE_SIZE}
           noRecordsText="Бараа олдсонгүй"
