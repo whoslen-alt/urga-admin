@@ -13,7 +13,7 @@ import { DeleteConfirmationDialog } from '../../components/DeleteConfirmationDia
 
 const PAGE_SIZE = 15;
 
-function User({ users, total: totalUsers, userToken }) {
+function WebConfig({ users, total: totalUsers, userToken }) {
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(totalUsers);
   const [records, setRecords] = useState(users);
@@ -22,7 +22,6 @@ function User({ users, total: totalUsers, userToken }) {
   const [deleting, setDeleting] = useState(false);
   const [deletingUser, setDeletingUser] = useState({ userid: null, name: null });
   const [editingUserData, setEditingUserData] = useState();
-  useEffect(() => {}, []);
   const [opened, { open, close }] = useDisclosure(false);
   const [confirmationOpened, { open: openConfirmation, close: closeConfirmation }] =
     useDisclosure(false);
@@ -363,4 +362,4 @@ export const getServerSideProps = requireAuthentication(async ({ req, res }) => 
   };
 });
 
-export default User;
+export default WebConfig;

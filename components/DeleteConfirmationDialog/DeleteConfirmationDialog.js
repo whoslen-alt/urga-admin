@@ -16,9 +16,22 @@ export function DeleteConfirmationDialog({
             min={0}
             {...form.getInputProps('name')}
           /> */}
-      <Text size="sm" weight={500} p="xs">
-        {thingToDelete?.name}
-      </Text>
+      <Group>
+        <Text size="sm" p="xs">
+          И-мейл:
+        </Text>
+        <Text size="sm" weight={500} p="xs">
+          {thingToDelete?.email}
+        </Text>
+      </Group>
+      <Group>
+        <Text size="sm" p="xs">
+          Хэрэглэгчийн нэр:
+        </Text>
+        <Text size="sm" weight={500} p="xs">
+          {thingToDelete?.name}
+        </Text>
+      </Group>
       <Group position="right" mt="xl">
         <Button variant="default" radius="xl" onClick={close}>
           Цуцлах
@@ -27,7 +40,9 @@ export function DeleteConfirmationDialog({
           type="submit"
           radius="xl"
           loading={loading}
-          onClick={(e) => onConfirm(thingToDelete?.id)}
+          onClick={(e) => {
+            onConfirm({ userid: thingToDelete?.userid });
+          }}
           color="red"
         >
           Идэвхигүй болгох

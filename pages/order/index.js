@@ -42,22 +42,15 @@ import requireAuthentication from '../../lib/requireAuthentication';
 const PAGE_SIZE = 15;
 const dateFormat = 'YYYY-MM-DD';
 
-function Order({ orders, total: totalOrders, userToken }) {
+function Order({ userToken }) {
   const [page, setPage] = useState(1);
-  const [total, setTotal] = useState(totalOrders);
-  const [records, setRecords] = useState(orders);
+  const [total, setTotal] = useState(0);
+  const [records, setRecords] = useState([]);
   const [loading, setLoading] = useState(false);
   const [updating, setUpdating] = useState(false);
   const [query, setQuery] = useState('');
   const [debounced] = useDebouncedValue(query, 500);
-  const [popovers, setPopovers] = useState(
-    orders.map((e) => {
-      return {
-        id: e.orderid,
-        isOpen: false,
-      };
-    })
-  );
+  const [popovers, setPopovers] = useState([]);
   const [dates, setDates] = useState([dayjs().subtract(7, 'days'), dayjs()]);
   const [orderFilterValue, setOrderFilterValue] = useState('all');
   const [expandedRecordIds, setExpandedRecordIds] = useState([]);
@@ -468,37 +461,11 @@ function Order({ orders, total: totalOrders, userToken }) {
 }
 
 export const getServerSideProps = requireAuthentication(async ({ req, res }) => {
-  try {
-    const from = 0;
-    const to = PAGE_SIZE;
-    const dateFormat = 'YYYY-MM-DD';
-    const initialDates = [dayjs().subtract(7, 'days'), dayjs()];
-    const response = await axios.get(
-      `${process.env.NEXT_PUBLIC_API}/admin/order/local?from=${initialDates[0].format(
-        dateFormat
-      )}&to=${initialDates[1].format(dateFormat)}?offset=${from}&limit=${to}`,
-      {
-        headers: {
-          Authorization: `Bearer ${req.cookies.urga_admin_user_jwt}`,
-        },
-      }
-    );
-    return {
-      props: {
-        orders: response.data?.data,
-        total: res.data.total,
-        userToken: req.cookies.urga_admin_user_jwt,
-      },
-    };
-  } catch (e) {
-    return {
-      props: {
-        orders: [],
-        total: 0,
-        userToken: req.cookies.urga_admin_user_jwt,
-      },
-    };
-  }
+  return {
+    props: {
+      userToken: req.cookies.urga_admin_user_jwt,
+    },
+  };
 });
 
 export default Order;

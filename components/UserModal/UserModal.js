@@ -11,26 +11,33 @@ import {
   Group,
   Text,
   LoadingOverlay,
+  Select,
 } from '@mantine/core';
 
 import { isNotEmpty, useForm } from '@mantine/form';
 import { useDisclosure } from '@mantine/hooks';
 import { IconArrowBack, IconCheck } from '@tabler/icons';
 import { useEffect } from 'react';
-function UserModal({ isOpen, close, onSubmit, loading }) {
+function UserModal({ initialData, isOpen, close, onSubmit, loading }) {
   const form = useForm({
     initialValues: {
-      username: '',
-      email: '',
-      password: '',
+      username: initialData?.username,
+      email: initialData?.email,
+      password: initialData?.password,
+      active: initialData?.active,
     },
     validate: {
       username: isNotEmpty('Нэр оруулна уу'),
       email: isNotEmpty('И-мейл оруулна уу'),
-      password: isNotEmpty('Нууц үг оруулна уу'),
+      password: initialData?.create ? isNotEmpty('Нууц үг оруулна уу') : null,
     },
   });
-
+  useEffect(() => {
+    form.setValues(initialData);
+    return () => {
+      form.reset();
+    };
+  }, [initialData]);
   return (
     <Modal
       opened={isOpen}
@@ -38,7 +45,7 @@ function UserModal({ isOpen, close, onSubmit, loading }) {
         form.reset();
         close();
       }}
-      title="Админ хэрэглэгч үүсгэх"
+      title={initialData?.create ? 'Админ хэрэглэгч үүсгэх' : 'Мэдээлэл засварлах'}
       closeOnClickOutside={false}
       centered
     >
@@ -57,8 +64,21 @@ function UserModal({ isOpen, close, onSubmit, loading }) {
             <TextInput label="И-мейл" {...form.getInputProps('email')} size="xs" />
           </Grid.Col>
           <Grid.Col span={12} xs={12}>
-            <TextInput label="Нууц үг" {...form.getInputProps('password')} size="xs" />
+            <Select
+              label="Идэвхитэй эсэх"
+              data={[
+                { label: 'Идэвхитэй', value: true },
+                { label: 'Идэвхигүй', value: false },
+              ]}
+              {...form.getInputProps('active')}
+              size="xs"
+            />
           </Grid.Col>
+          {initialData?.create && (
+            <Grid.Col span={12} xs={12}>
+              <TextInput label="Нууц үг" {...form.getInputProps('password')} size="xs" />
+            </Grid.Col>
+          )}
           <Grid.Col span={12} xs={12}>
             <Group position="right">
               <Button
@@ -70,7 +90,7 @@ function UserModal({ isOpen, close, onSubmit, loading }) {
               >
                 Цуцлах
               </Button>
-              <Button type="submit">Үүсгэх</Button>
+              <Button type="submit"> {initialData?.create ? 'Үүсгэх' : 'Хадгалах'}</Button>
             </Group>
           </Grid.Col>
         </Grid>

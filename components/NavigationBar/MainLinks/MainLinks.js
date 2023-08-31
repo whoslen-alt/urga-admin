@@ -46,7 +46,7 @@ const data = [
   { icon: <IconPackage size={16} />, label: 'Бараанууд', link: '/product' },
   { icon: <IconCheckupList size={16} />, label: 'Захиалгууд', link: '/order' },
   { icon: <IconUsers size={16} />, label: 'Админ хэрэглэгчид', link: '/user' },
-  // { icon: <IconBrowser size={16} />, label: 'Веб сайт тохиргоо', link: '/webconfig' },
+  { icon: <IconBrowser size={16} />, label: 'Веб сайт тохиргоо', link: '/webconfig' },
 ];
 
 export function MainLinks() {
