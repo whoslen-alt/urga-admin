@@ -1,16 +1,37 @@
-import Image from 'next/image';
-import { Button, Group, Modal, Select, Stack, Text, FileInput, TextInput } from '@mantine/core';
+import {
+  Button,
+  Group,
+  Modal,
+  Select,
+  Stack,
+  Text,
+  TextInput,
+  SimpleGrid,
+  ActionIcon,
+  Image,
+} from '@mantine/core';
 import { useMemo, useState } from 'react';
 import { isNotEmpty, useForm } from '@mantine/form';
 import { IconX } from '@tabler/icons';
 
-export function CategoryModal({ opened, close, type, creating, onSubmit, categories }) {
-  const [currentImage, setCurrenImage] = useState('');
+import { Dropzone, MIME_TYPES } from '@mantine/dropzone';
+
+export function CategoryModal({
+  opened,
+  close,
+  type,
+  creating,
+  onSubmit,
+  categories,
+  isFileUploading,
+  handleImageDrop,
+}) {
   const form = useForm({
     initialValues: {
       name: '',
       main_cat_id: '',
       parent_cat_id: '',
+      icon: null,
     },
     validate: {
       name: (value) => (value.length > 0 ? null : 'Нэр оруулна уу'),
@@ -26,16 +47,6 @@ export function CategoryModal({ opened, close, type, creating, onSubmit, categor
     }),
     []
   );
-
-  const handleDropImage = (files) => {
-    if (files) {
-      const reader = new FileReader();
-      reader.onload = () => {
-        setCurrenImage(reader.result);
-      };
-      reader.readAsDataURL(files);
-    }
-  };
 
   const handleSubmit = async (fields) => {
     await onSubmit(fields, type);
@@ -76,17 +87,43 @@ export function CategoryModal({ opened, close, type, creating, onSubmit, categor
             />
           )}
           {type === 'parent' && (
-            <FileInput
-              {...form.getInputProps('upload_image')}
-              label="Icon зураг оруулах"
-              onChange={(value) => {
-                handleDropImage(value);
-                if (form.getInputProps(`upload_image`).onChange)
-                  form.getInputProps(`upload_image`).onChange(value);
-              }}
-              placeholder="png, jpg зураг оруулна уу!"
-              accept="image/png,image/jpeg"
-            />
+            <div>
+              <Text size="xs" weight="bold">
+                Icon зураг оруулах
+              </Text>
+              <Dropzone
+                mt="xs"
+                maxFiles={1}
+                accept={[MIME_TYPES.png, MIME_TYPES.jpeg, MIME_TYPES.svg]}
+                onDrop={(acceptedFiles) => {
+                  handleImageDrop(acceptedFiles, (imgUrl) => form.setFieldValue('icon', imgUrl));
+                }}
+                loading={isFileUploading}
+              >
+                <Text align="center" size="sm">
+                  Та файлаа энд хуулна уу
+                </Text>
+              </Dropzone>
+              <SimpleGrid cols={4} breakpoints={[{ maxWidth: 'sm', cols: 1 }]} mt="xl">
+                {form.getInputProps('icon').value && (
+                  <Stack spacing={0} pos="relative">
+                    <Image src={form.getInputProps('icon').value} withPlaceholder />
+                    <ActionIcon
+                      variant="filled"
+                      radius="xl"
+                      color="red"
+                      size="xs"
+                      pos="absolute"
+                      top={-10}
+                      right={-10}
+                      onClick={() => form.setFieldValue('icon', null)}
+                    >
+                      <IconX size="0.8rem" />
+                    </ActionIcon>
+                  </Stack>
+                )}
+              </SimpleGrid>
+            </div>
           )}
           {type === 'child' && (
             <Select
@@ -101,22 +138,6 @@ export function CategoryModal({ opened, close, type, creating, onSubmit, categor
               {...form.getInputProps('parent_cat_id')}
             />
           )}
-
-          {currentImage ? (
-            <Group position="center">
-              <Image src={currentImage} alt="Uploaded Preview" width={150} height={150} />
-              <Button
-                variant="light"
-                onClick={() => setCurrenImage(null)}
-                radius="lg"
-                w="100%"
-                color="red"
-                leftIcon={<IconX size={16} />}
-              >
-                Арилгах
-              </Button>
-            </Group>
-          ) : null}
         </Stack>
         <Group position="right" mt="xl">
           <Button variant="subtle" radius="xl" onClick={handleClose}>

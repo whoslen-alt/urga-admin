@@ -20,6 +20,7 @@ import {
   LoadingOverlay,
   Popover,
   List,
+  SimpleGrid,
 } from '@mantine/core';
 import { DataTable } from 'mantine-datatable';
 import { useState, useEffect, useMemo } from 'react';
@@ -34,6 +35,7 @@ import axios from 'axios';
 import CategoryEditor from '../../components/CategoryEditor/CategoryEditor';
 import requireAuthentication from '../../lib/requireAuthentication';
 import { isNotEmpty, useForm } from '@mantine/form';
+import { Dropzone, MIME_TYPES } from '@mantine/dropzone';
 const PAGE_SIZE = 15;
 function Category({ mainCats, parentCats, childCats, userToken }) {
   const form = useForm({
@@ -41,14 +43,14 @@ function Category({ mainCats, parentCats, childCats, userToken }) {
       id: '',
       name: '',
       main_cat_id: '',
+      icon: null,
+      active: undefined,
     },
     validate: {
       name: isNotEmpty('Нэр оруулна уу'),
     },
   });
   const [activeTab, setActiveTab] = useState('main');
-
-  const [image, setImage] = useState('');
 
   const [mainCategories, setMainCategories] = useState([]);
   const [parentCategories, setParentCategories] = useState([]);
@@ -93,6 +95,14 @@ function Category({ mainCats, parentCats, childCats, userToken }) {
   const [deleting, setDeleting] = useState(false);
   const [updating, setUpdating] = useState(false);
   const [type, setType] = useState('');
+  const [isFileUploading, setIsFileUploading] = useState(false);
+
+  const config = {
+    headers: {
+      Authorization: `Bearer ${userToken}`,
+    },
+  };
+
   const multiSelectReadOnlyStyle = useMemo(
     () => ({
       input: {
@@ -116,18 +126,27 @@ function Category({ mainCats, parentCats, childCats, userToken }) {
     handler.open();
   };
 
-  const handleDropImage = (files) => {
-    if (files) {
-      const reader = new FileReader();
-      reader.onload = () => {
-        setImage(reader.result);
-      };
-      reader.readAsDataURL(files);
+  const handleImageDrop = async (acceptedFiles, imageFieldSetter) => {
+    const formData = new FormData();
+    if (acceptedFiles) {
+      setIsFileUploading(true);
+      const file = acceptedFiles[0];
+      formData.append('img', file, file.name);
+      axios
+        .post(`${process.env.NEXT_PUBLIC_API}/admin/upload`, formData, config)
+        .then((value) => {
+          if (value.status === 200) {
+            const imgUrl = value.data.data;
+            if (imageFieldSetter) {
+              imageFieldSetter(imgUrl);
+            } else {
+              form.setFieldValue('icon', imgUrl);
+            }
+          }
+          return setIsFileUploading(false);
+        })
+        .catch((err) => setIsFileUploading(false));
     }
-  };
-
-  const handleClearImage = () => {
-    setImage(null);
   };
 
   const fetchAllCategories = async () => {
@@ -145,33 +164,23 @@ function Category({ mainCats, parentCats, childCats, userToken }) {
   };
   const createCategory = async (values, categoryType) => {
     setCreating(true);
-    const formData = new FormData();
-
-    formData.append('name', values.name);
-    formData.append('main_cat_id', values.main_cat_id);
-    formData.append('upload_image', values.upload_image, values.upload_image.name);
 
     let body = {
       name: values.name,
       main_cat_id: values.main_cat_id,
     };
-
     if (categoryType === 'parent') {
-      body = formData; // Assign the formData directly
-    } else if (categoryType === 'child') {
+      body.icon = values.icon;
+    }
+    if (categoryType === 'child') {
       body.parent_id = values.parent_id;
     }
-
     const title = 'Ангилал үүсгэлт';
     try {
       const res = await axios.post(
         `${process.env.NEXT_PUBLIC_API}/admin/category/${categoryType}`,
         body,
-        {
-          headers: {
-            Authorization: `Bearer ${userToken}`,
-          },
-        }
+        config
       );
 
       if (res.status === 200 && res.data?.success) {
@@ -253,17 +262,9 @@ function Category({ mainCats, parentCats, childCats, userToken }) {
   };
 
   const updateCategory = async (values) => {
-    console.log(values);
     setUpdating(true);
 
     const title = 'Ангилал шинэчлэлт';
-
-    const formData = new FormData();
-
-    formData.append('name', values.name);
-    formData.append('parent_id', values.id);
-    formData.append('main_cat_id', values.main_cat_id);
-    formData.append('upload_image', values.upload_image, values.upload_image.name);
 
     let body = {
       name: values.name,
@@ -273,7 +274,9 @@ function Category({ mainCats, parentCats, childCats, userToken }) {
     if (activeTab === 'main') {
       body.main_id = values.id;
     } else if (activeTab === 'parent') {
-      body = formData; // Assign the formData directly
+      body.parent_id = values.id;
+      body.main_cat_id = values.main_cat_id;
+      body.icon = values.icon;
     } else {
       body.child_id = values.id;
       body.parent_id = values.parent_id;
@@ -284,28 +287,7 @@ function Category({ mainCats, parentCats, childCats, userToken }) {
       const res = await axios.put(
         `${process.env.NEXT_PUBLIC_API}/admin/category/${activeTab}`,
         body,
-        // {
-        //   name: values.name,
-        //   active: values.active,
-        //   ...(activeTab === 'main'
-        //     ? { main_id: values.id }
-        //     : activeTab === 'parent'
-        //     ? {
-        //         parent_id: values.id,
-        //         main_cat_id: values.main_cat_id,
-        //         upload_image: formData,
-        //       }
-        //     : {
-        //         child_id: values.id,
-        //         parent_id: values.parent_id,
-        //         main_cat_id: values.main_cat_id,
-        //       }),
-        // },
-        {
-          headers: {
-            Authorization: `Bearer ${userToken}`,
-          },
-        }
+        config
       );
       if (res.status === 200 && res.data?.success) {
         showNotification({
@@ -314,7 +296,6 @@ function Category({ mainCats, parentCats, childCats, userToken }) {
           color: 'green',
           icon: <IconCheck />,
         });
-        setImage('');
         await fetchAllCategories();
       } else {
         showNotification({
@@ -347,6 +328,8 @@ function Category({ mainCats, parentCats, childCats, userToken }) {
           type={type}
           creating={creating}
           onSubmit={createCategory}
+          handleImageDrop={handleImageDrop}
+          isFileUploading={isFileUploading}
           categories={{ mainCategories, parentCategories, childCategories }}
         />
         <DeleteConfirmationDialog
@@ -581,7 +564,16 @@ function Category({ mainCats, parentCats, childCats, userToken }) {
                                 })}
                                 {...form.getInputProps('main_cat_id')}
                               />
-                              <FileInput
+                              <Select
+                                size="xs"
+                                label="Идэвхитэй эсэх"
+                                data={[
+                                  { value: true, label: 'Идэвхитэй' },
+                                  { value: false, label: 'Идэвхигүй' },
+                                ]}
+                                {...form.getInputProps('active')}
+                              />
+                              {/* <FileInput
                                 {...form.getInputProps('upload_image')}
                                 label="Icon зураг оруулах"
                                 onChange={(value) => {
@@ -591,9 +583,9 @@ function Category({ mainCats, parentCats, childCats, userToken }) {
                                 }}
                                 placeholder="png, jpg зураг оруулна уу!"
                                 accept="image/png,image/jpeg"
-                              />
+                              /> */}
 
-                              {image ? (
+                              {/* {image ? (
                                 <Group position="center">
                                   <Image
                                     src={image}
@@ -612,8 +604,49 @@ function Category({ mainCats, parentCats, childCats, userToken }) {
                                     Арилгах
                                   </Button>
                                 </Group>
-                              ) : null}
-
+                              ) : null} */}
+                              <div>
+                                <Text size="xs" weight="bold">
+                                  Icon зураг оруулах
+                                </Text>
+                                <Dropzone
+                                  mt="xs"
+                                  maxFiles={1}
+                                  accept={[MIME_TYPES.png, MIME_TYPES.jpeg, MIME_TYPES.svg]}
+                                  onDrop={handleImageDrop}
+                                  loading={isFileUploading}
+                                >
+                                  <Text align="center" size="sm">
+                                    Та файлаа энд хуулна уу
+                                  </Text>
+                                </Dropzone>
+                                <SimpleGrid
+                                  cols={4}
+                                  breakpoints={[{ maxWidth: 'sm', cols: 1 }]}
+                                  mt="xl"
+                                >
+                                  {form.getInputProps('icon').value && (
+                                    <Stack spacing={0} pos="relative">
+                                      <Image
+                                        src={form.getInputProps('icon').value}
+                                        withPlaceholder
+                                      />
+                                      <ActionIcon
+                                        variant="filled"
+                                        radius="xl"
+                                        color="red"
+                                        size="xs"
+                                        pos="absolute"
+                                        top={-10}
+                                        right={-10}
+                                        onClick={() => form.setFieldValue('icon', null)}
+                                      >
+                                        <IconX size="0.8rem" />
+                                      </ActionIcon>
+                                    </Stack>
+                                  )}
+                                </SimpleGrid>
+                              </div>
                               <Stack mt={10} spacing={14}>
                                 <Group position="apart">
                                   <Text size="sm">Хамаарах ангилалууд</Text>
@@ -727,7 +760,9 @@ function Category({ mainCats, parentCats, childCats, userToken }) {
                                         form.setValues({
                                           id: parentCategory.id,
                                           name: parentCategory.name,
-                                          main_cat_id: parentCategory.main_cat_id.toString(),
+                                          main_cat_id: parentCategory?.main_cat_id?.toString(),
+                                          icon: parentCategory?.icon,
+                                          active: parentCategory.active,
                                         });
                                         setBeingEditedCategory(parentCategory.id);
                                       }}

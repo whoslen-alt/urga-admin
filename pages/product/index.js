@@ -78,6 +78,13 @@ function Product({
   useEffect(() => {
     setPage(1);
   }, [handleSearch]);
+
+  const config = {
+    headers: {
+      Authorization: `Bearer ${userToken}`,
+    },
+  };
+
   async function handleSearch() {
     setLoading(true);
     const from = (page - 1) * PAGE_SIZE;
@@ -171,17 +178,10 @@ function Product({
           promo_price: values.promo_price,
           wholesale_price: values.wholesale_price,
           wholesale_qty: values.wholesale_qty,
-          images: [
-            // 'https://wp.dailybruin.com/images/2018/10/web.ae_.trench.review.courtesy.jpg',
-            // 'https://www.seekpng.com/png/detail/417-4172893_transparent-twenty-one-pilots-self-titled-album-cover.png',
-          ],
+          images: values.images,
         },
 
-        {
-          headers: {
-            Authorization: `Bearer ${userToken}`,
-          },
-        }
+        config
       );
       if (res.status === 200 && res.data?.success) {
         showNotification({
@@ -229,18 +229,12 @@ function Product({
           promo_price: values.promo_price,
           wholesale_price: values.wholesale_price,
           wholesale_qty: values.wholesale_qty,
-          images: [
-            // 'https://wp.dailybruin.com/images/2018/10/web.ae_.trench.review.courtesy.jpg',
-            // 'https://www.seekpng.com/png/detail/417-4172893_transparent-twenty-one-pilots-self-titled-album-cover.png',
-          ],
+          images: values.images,
           active: values.active,
+          deleted_images: values.deleted_images,
         },
 
-        {
-          headers: {
-            Authorization: `Bearer ${userToken}`,
-          },
-        }
+        config
       );
       if (res.status === 200 && res.data?.success) {
         showNotification({
@@ -500,7 +494,7 @@ function Product({
                   <ActionIcon
                     color="blue"
                     onClick={(e) => {
-                      e.stopPropagation();
+                      e.preventDefault();
                       openProductEditingModal(record);
                     }}
                   >

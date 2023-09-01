@@ -63,7 +63,7 @@ function UserModal({ initialData, isOpen, close, onSubmit, loading }) {
           <Grid.Col span={12} xs={12}>
             <TextInput label="И-мейл" {...form.getInputProps('email')} size="xs" />
           </Grid.Col>
-          <Grid.Col span={12} xs={12}>
+          {/* <Grid.Col span={12} xs={12}>
             <Select
               label="Идэвхитэй эсэх"
               data={[
@@ -73,7 +73,7 @@ function UserModal({ initialData, isOpen, close, onSubmit, loading }) {
               {...form.getInputProps('active')}
               size="xs"
             />
-          </Grid.Col>
+          </Grid.Col> */}
           {initialData?.create && (
             <Grid.Col span={12} xs={12}>
               <TextInput label="Нууц үг" {...form.getInputProps('password')} size="xs" />

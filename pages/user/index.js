@@ -131,14 +131,14 @@ function User({ users, total: totalUsers, userToken }) {
     setUpdating(false);
   };
 
-  const deleteUser = async ({ userid }) => {
+  const deleteUser = async (id) => {
     setLoading(true);
     const title = 'Админ хэрэглэгч идэвхигүй болголт';
     try {
       const res = await axios.put(
         `${process.env.NEXT_PUBLIC_API}/admin/profile`,
         {
-          userid,
+          userid: id,
           active: false,
         },
         {
@@ -179,7 +179,7 @@ function User({ users, total: totalUsers, userToken }) {
   };
 
   const openDeleteConfirmation = (userid, userName, email) => {
-    setDeletingUser({ userid, name: userName, email: email });
+    setDeletingUser({ id: userid, name: userName, email: email });
     openConfirmation();
   };
 

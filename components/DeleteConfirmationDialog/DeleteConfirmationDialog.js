@@ -9,24 +9,19 @@ export function DeleteConfirmationDialog({
 }) {
   return (
     <Modal opened={isOpen} onClose={close} title={confirmationText} centered>
-      {/* <TextInput
-            mt="sm"
-            // label="Ангиллын нэр"
-            placeholder="Ангиллын нэр"
-            min={0}
-            {...form.getInputProps('name')}
-          /> */}
+      {thingToDelete?.email && (
+        <Group>
+          <Text size="sm" p="xs">
+            И-мейл:
+          </Text>
+          <Text size="sm" weight={500} p="xs">
+            {thingToDelete?.email}
+          </Text>
+        </Group>
+      )}
       <Group>
         <Text size="sm" p="xs">
-          И-мейл:
-        </Text>
-        <Text size="sm" weight={500} p="xs">
-          {thingToDelete?.email}
-        </Text>
-      </Group>
-      <Group>
-        <Text size="sm" p="xs">
-          Хэрэглэгчийн нэр:
+          Нэр:
         </Text>
         <Text size="sm" weight={500} p="xs">
           {thingToDelete?.name}
@@ -41,7 +36,7 @@ export function DeleteConfirmationDialog({
           radius="xl"
           loading={loading}
           onClick={(e) => {
-            onConfirm({ userid: thingToDelete?.userid });
+            onConfirm(thingToDelete?.id);
           }}
           color="red"
         >
