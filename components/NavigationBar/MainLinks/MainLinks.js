@@ -7,6 +7,7 @@ import {
   IconCheckupList,
   IconChecklist,
   IconUsers,
+  IconUnlink,
 } from '@tabler/icons';
 import { ThemeIcon, UnstyledButton, Group, Text } from '@mantine/core';
 import { useRouter } from 'next/router';
@@ -47,6 +48,7 @@ const data = [
   { icon: <IconCheckupList size={16} />, label: 'Захиалгууд', link: '/order' },
   { icon: <IconUsers size={16} />, label: 'Админ хэрэглэгчид', link: '/user' },
   { icon: <IconBrowser size={16} />, label: 'Веб сайт тохиргоо', link: '/webconfig' },
+  // { icon: <IconUnlink size={16} />, label: 'Холбоосууд', link: '/hyperlinks' },
 ];
 
 export function MainLinks() {

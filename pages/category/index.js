@@ -151,7 +151,7 @@ function Category({ mainCats, parentCats, childCats, userToken }) {
 
   const fetchAllCategories = async () => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API}/category/all?type=separate`);
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API}/admin/category/all?type=separate`);
       const data = await res.json();
 
       setMainCategories(data.data.mainCats);
@@ -613,7 +613,7 @@ function Category({ mainCats, parentCats, childCats, userToken }) {
                                   mt="xs"
                                   maxFiles={1}
                                   accept={[MIME_TYPES.png, MIME_TYPES.jpeg, MIME_TYPES.svg]}
-                                  onDrop={handleImageDrop}
+                                  onDrop={(files) => handleImageDrop(files)}
                                   loading={isFileUploading}
                                 >
                                   <Text align="center" size="sm">
@@ -625,12 +625,9 @@ function Category({ mainCats, parentCats, childCats, userToken }) {
                                   breakpoints={[{ maxWidth: 'sm', cols: 1 }]}
                                   mt="xl"
                                 >
-                                  {form.getInputProps('icon').value && (
+                                  {form.values.icon && (
                                     <Stack spacing={0} pos="relative">
-                                      <Image
-                                        src={form.getInputProps('icon').value}
-                                        withPlaceholder
-                                      />
+                                      <Image src={form.values.icon} withPlaceholder />
                                       <ActionIcon
                                         variant="filled"
                                         radius="xl"

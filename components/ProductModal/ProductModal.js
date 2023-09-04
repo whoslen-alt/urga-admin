@@ -45,18 +45,23 @@ function ProductModal({ initialData, isOpen, close, categories, onSubmit, loadin
       promo_price: initialData?.promo_price,
       wholesale_price: initialData?.wholesale_price,
       wholesale_qty: initialData?.wholesale_qty,
-      images: initialData?.product_image?.images || [],
+      images: [],
       active: initialData?.active,
       deleted_images: [],
     },
     validate: {
       name: (value) => (value ? null : 'Нэр оруулна уу'),
-      images: (value) => (value.length > 3 ? '3- аас их зураг оруулах боломжгүй' : null),
+      instock: (value) => (value ? (isNaN(value) ? 'Тоо оруулна уу' : null) : null),
+      packaging: (value) => (value ? (isNaN(value) ? 'Тоо оруулна уу' : null) : null),
+      price: (value) => (value ? (isNaN(value) ? 'Тоо оруулна уу' : null) : null),
+      promo_price: (value) => (value ? (isNaN(value) ? 'Тоо оруулна уу' : null) : null),
+      wholesale_price: (value) => (value ? (isNaN(value) ? 'Тоо оруулна уу' : null) : null),
+      wholesale_qty: (value) => (value ? (isNaN(value) ? 'Тоо оруулна уу' : null) : null),
     },
   });
   useEffect(() => {
     if (initialData) {
-      form.setFieldValue('images', initialData?.product_image?.images);
+      form.setFieldValue('images', initialData?.product_image?.images || []);
     }
   }, [initialData]);
   const config = {
@@ -265,10 +270,8 @@ function ProductModal({ initialData, isOpen, close, categories, onSubmit, loadin
                 Барааны зураг оруулах
               </Text>
               <Dropzone
-                disabled={form.values.images?.length === 3}
                 mt="xs"
                 multiple
-                maxFiles={3}
                 accept={[MIME_TYPES.png, MIME_TYPES.jpeg, MIME_TYPES.svg]}
                 onDrop={handleImageDrop}
                 loading={isFileUploading}
