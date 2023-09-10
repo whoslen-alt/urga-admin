@@ -173,7 +173,7 @@ function Category({ mainCats, parentCats, childCats, userToken }) {
       body.icon = values.icon;
     }
     if (categoryType === 'child') {
-      body.parent_id = values.parent_id;
+      body.parent_id = values.parent_cat_id;
     }
     const title = 'Ангилал үүсгэлт';
     try {
@@ -279,7 +279,7 @@ function Category({ mainCats, parentCats, childCats, userToken }) {
       body.icon = values.icon;
     } else {
       body.child_id = values.id;
-      body.parent_id = values.parent_id;
+      body.parent_id = values.parent_cat_id;
       body.main_cat_id = values.main_cat_id;
     }
 
