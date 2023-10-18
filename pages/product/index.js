@@ -299,7 +299,6 @@ function Product({
     setUploading(false);
   };
   return (
-    <DefaultLayout>
       <Container fluid mx="xs" sx={{ maxHeight: '100%' }}>
         <DeleteConfirmationDialog
           isOpen={confirmationOpened}
@@ -515,7 +514,6 @@ function Product({
           ]}
         />
       </Container>
-    </DefaultLayout>
   );
 }
 export const getServerSideProps = requireAuthentication(async ({ req, res }) => {

@@ -192,154 +192,152 @@ function User({ users, total: totalUsers, userToken }) {
     open();
   };
   return (
-    <DefaultLayout>
-      <Container fluid mx="xs" sx={{ maxHeight: '100%' }}>
-        <UserModal
-          isOpen={opened}
-          close={close}
-          initialData={editingUserData}
-          onSubmit={editingUserData?.create ? createProduct : updateProduct}
-          loading={updating}
-        />
-        <DeleteConfirmationDialog
-          isOpen={confirmationOpened}
-          close={closeConfirmation}
-          confirmationText="Хэрэглэгчийг идэвхигүй болгох уу?"
-          thingToDelete={deletingUser}
-          onConfirm={deleteUser}
-          loading={deleting}
-        />
-        <Grid position="apart" grow>
-          <Grid.Col span={2}>
-            <Text size="lg" weight={500}>
-              Админ хэрэглэгчид
-            </Text>
-          </Grid.Col>
+    <Container fluid mx="xs" sx={{ maxHeight: '100%' }}>
+      <UserModal
+        isOpen={opened}
+        close={close}
+        initialData={editingUserData}
+        onSubmit={editingUserData?.create ? createProduct : updateProduct}
+        loading={updating}
+      />
+      <DeleteConfirmationDialog
+        isOpen={confirmationOpened}
+        close={closeConfirmation}
+        confirmationText="Хэрэглэгчийг идэвхигүй болгох уу?"
+        thingToDelete={deletingUser}
+        onConfirm={deleteUser}
+        loading={deleting}
+      />
+      <Grid position="apart" grow>
+        <Grid.Col span={2}>
+          <Text size="lg" weight={500}>
+            Админ хэрэглэгчид
+          </Text>
+        </Grid.Col>
 
-          <Grid.Col offset={8} span={1}>
-            <Button
-              variant="filled"
-              radius="xl"
-              styles={{ label: { padding: 12 } }}
-              onClick={(e) => {
-                e.preventDefault();
-                openUserEditingModal({}, 'creation');
-              }}
-            >
-              Хэрэглэгч Үүсгэх
-            </Button>
-          </Grid.Col>
-        </Grid>
+        <Grid.Col offset={8} span={1}>
+          <Button
+            variant="filled"
+            radius="xl"
+            styles={{ label: { padding: 12 } }}
+            onClick={(e) => {
+              e.preventDefault();
+              openUserEditingModal({}, 'creation');
+            }}
+          >
+            Хэрэглэгч Үүсгэх
+          </Button>
+        </Grid.Col>
+      </Grid>
 
-        <DataTable
-          height="75vh"
-          minHeight="75vh"
-          mt="lg"
-          fontSize="xs"
-          borderRadius="sm"
-          withBorder
-          withColumnBorders
-          highlightOnHover
-          records={records}
-          fetching={loading}
-          page={page}
-          onPageChange={(pageNum) => {
-            setPage(pageNum);
-            fetchPage(pageNum);
-          }}
-          totalRecords={total}
-          recordsPerPage={PAGE_SIZE}
-          noRecordsText="Бүртгэгдсэн хэрэглэгч олдсонгүй"
-          idAccessor="userid"
-          columns={[
-            {
-              accessor: 'username',
-              title: 'Нэр',
-            },
-            {
-              accessor: 'email',
-              title: 'И-мейл',
-              // render: (r) => <Text weight={500}>{r.name}</Text>,
-            },
-            {
-              accessor: 'last_login_at',
-              title: 'Сүүлд нэвтэрсэн огноо',
-              textAlignment: 'center',
+      <DataTable
+        height="75vh"
+        minHeight="75vh"
+        mt="lg"
+        fontSize="xs"
+        borderRadius="sm"
+        withBorder
+        withColumnBorders
+        highlightOnHover
+        records={records}
+        fetching={loading}
+        page={page}
+        onPageChange={(pageNum) => {
+          setPage(pageNum);
+          fetchPage(pageNum);
+        }}
+        totalRecords={total}
+        recordsPerPage={PAGE_SIZE}
+        noRecordsText="Бүртгэгдсэн хэрэглэгч олдсонгүй"
+        idAccessor="userid"
+        columns={[
+          {
+            accessor: 'username',
+            title: 'Нэр',
+          },
+          {
+            accessor: 'email',
+            title: 'И-мейл',
+            // render: (r) => <Text weight={500}>{r.name}</Text>,
+          },
+          {
+            accessor: 'last_login_at',
+            title: 'Сүүлд нэвтэрсэн огноо',
+            textAlignment: 'center',
 
-              width: 180,
-              render: ({ last_login_at }) =>
-                last_login_at ? (
-                  <Text>{dayjs(last_login_at).format('YYYY-MM-DD HH:MM:ss')}</Text>
-                ) : (
-                  ''
-                ),
-            },
-            {
-              accessor: 'active',
-              title: 'Идэвхитэй эсэх',
-              width: 130,
-              textAlignment: 'center',
-              render: (record) => (
-                <Badge
-                  color={record.active ? 'green' : 'red'}
-                  size="sm"
-                  variant="filled"
-                  styles={{
-                    inner: {
-                      textTransform: 'capitalize',
-                      fontWeight: 500,
-                    },
-                    root: {
-                      padding: '8px 8px 9px 8px',
-                    },
+            width: 180,
+            render: ({ last_login_at }) =>
+              last_login_at ? (
+                <Text>{dayjs(last_login_at).format('YYYY-MM-DD HH:MM:ss')}</Text>
+              ) : (
+                ''
+              ),
+          },
+          {
+            accessor: 'active',
+            title: 'Идэвхитэй эсэх',
+            width: 130,
+            textAlignment: 'center',
+            render: (record) => (
+              <Badge
+                color={record.active ? 'green' : 'red'}
+                size="sm"
+                variant="filled"
+                styles={{
+                  inner: {
+                    textTransform: 'capitalize',
+                    fontWeight: 500,
+                  },
+                  root: {
+                    padding: '8px 8px 9px 8px',
+                  },
+                }}
+              >
+                {record.active ? 'Идэвхитэй' : 'Идэвхигүй'}
+              </Badge>
+            ),
+          },
+          {
+            accessor: 'createdAt',
+            title: 'Үүсгэсэн огноо',
+            textAlignment: 'center',
+            width: 180,
+            render: ({ createdAt }) => (
+              <Text>{dayjs(createdAt).format('YYYY-MM-DD HH:MM:ss')}</Text>
+            ),
+          },
+          {
+            accessor: 'actions',
+            title: <Text>Үйлдэл</Text>,
+            textAlignment: 'center',
+            width: 80,
+            render: (record) => (
+              <Group spacing={4} noWrap>
+                <ActionIcon
+                  color="blue"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    openUserEditingModal(record);
                   }}
                 >
-                  {record.active ? 'Идэвхитэй' : 'Идэвхигүй'}
-                </Badge>
-              ),
-            },
-            {
-              accessor: 'createdAt',
-              title: 'Үүсгэсэн огноо',
-              textAlignment: 'center',
-              width: 180,
-              render: ({ createdAt }) => (
-                <Text>{dayjs(createdAt).format('YYYY-MM-DD HH:MM:ss')}</Text>
-              ),
-            },
-            {
-              accessor: 'actions',
-              title: <Text>Үйлдэл</Text>,
-              textAlignment: 'center',
-              width: 80,
-              render: (record) => (
-                <Group spacing={4} noWrap>
-                  <ActionIcon
-                    color="blue"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      openUserEditingModal(record);
-                    }}
-                  >
-                    <IconEdit size={16} />
-                  </ActionIcon>
-                  <ActionIcon
-                    color="red"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      const { userid, username, email } = record;
-                      openDeleteConfirmation(userid, username, email);
-                    }}
-                  >
-                    <IconTrash size={16} />
-                  </ActionIcon>
-                </Group>
-              ),
-            },
-          ]}
-        />
-      </Container>
-    </DefaultLayout>
+                  <IconEdit size={16} />
+                </ActionIcon>
+                <ActionIcon
+                  color="red"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    const { userid, username, email } = record;
+                    openDeleteConfirmation(userid, username, email);
+                  }}
+                >
+                  <IconTrash size={16} />
+                </ActionIcon>
+              </Group>
+            ),
+          },
+        ]}
+      />
+    </Container>
   );
 }
 

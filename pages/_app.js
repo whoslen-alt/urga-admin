@@ -7,6 +7,7 @@ import { ModalsProvider } from '@mantine/modals';
 
 import { Notifications } from '@mantine/notifications';
 import Auth from '../components/HOCs/Auth';
+import DefaultLayout from '../components/Layouts/DefaultLayout';
 
 export default function App(props) {
   const { Component, pageProps } = props;
@@ -36,7 +37,10 @@ export default function App(props) {
           <ModalsProvider>
             <Notifications />
             {/* <Auth> */}
-            <Component {...pageProps} />
+            <DefaultLayout>
+              <Component {...pageProps} />
+            </DefaultLayout>
+
             {/* </Auth> */}
           </ModalsProvider>
         </MantineProvider>

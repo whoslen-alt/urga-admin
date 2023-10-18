@@ -193,115 +193,113 @@ function Hyperlinks({ userToken }) {
   };
 
   return (
-    <DefaultLayout>
-      <Container fluid mx="xs" sx={{ maxHeight: '100%' }}>
-        <Grid position="apart" grow>
-          <Grid.Col span={2}>
-            <Text size="lg" weight={500}>
-              Веб сайтын тохиргоо
+    <Container fluid mx="xs" sx={{ maxHeight: '100%' }}>
+      <Grid position="apart" grow>
+        <Grid.Col span={2}>
+          <Text size="lg" weight={500}>
+            Веб сайтын тохиргоо
+          </Text>
+        </Grid.Col>
+      </Grid>
+      <form
+        onSubmit={form.onSubmit(async (values) => {
+          await handleSubmit(values);
+        })}
+      >
+        <Grid mt="lg" gutter="xl">
+          <Grid.Col span={12}>
+            <ColorInput
+              label="Вебийн толгой хэсгийн өнгө"
+              placeholder="Өнгө сонгоно уу"
+              format="hex"
+              swatches={swatches}
+              {...form.getInputProps('header_color')}
+            />
+          </Grid.Col>
+          <Grid.Col span={12}>
+            <ColorInput
+              label="Вебийн хөл хэсгийн өнгө"
+              placeholder="Өнгө сонгоно уу"
+              format="hex"
+              swatches={swatches}
+              {...form.getInputProps('footer_color')}
+            />
+          </Grid.Col>
+          <Grid.Col span={12}>
+            <ColorInput
+              label="Вебийн дэвсгэр өнгө"
+              placeholder="Өнгө сонгоно уу"
+              format="hex"
+              swatches={swatches}
+              {...form.getInputProps('background_color')}
+            />
+          </Grid.Col>
+          <Grid.Col span={12}>
+            <Text weight={500} size="sm">
+              Байршлын мэдээлэл
             </Text>
+            <CustomRichTextEditor editor={locationEditor} />
+          </Grid.Col>
+          <Grid.Col span={12}>
+            <Text weight={500} size="sm">
+              Ажлын цагийн мэдээлэл
+            </Text>
+            <CustomRichTextEditor editor={workHourEditor} />
+          </Grid.Col>
+          <Grid.Col span={12}>
+            <Text weight={500} size="sm">
+              Холбоо барих мэдээлэл
+            </Text>
+            <CustomRichTextEditor editor={contactEditor} />
+          </Grid.Col>
+
+          <Grid.Col span={12}>
+            <Text weight={500} size="sm">
+              Вебийн лого
+            </Text>
+            <div>
+              <Dropzone
+                mt="xs"
+                maxFiles={1}
+                accept={[MIME_TYPES.png, MIME_TYPES.jpeg, MIME_TYPES.svg]}
+                onDrop={(acceptedFiles) => {
+                  handleImageDrop(acceptedFiles);
+                }}
+                loading={isFileUploading}
+              >
+                <Text align="center" size="sm">
+                  Та файлаа энд хуулна уу
+                </Text>
+              </Dropzone>
+              <SimpleGrid cols={4} breakpoints={[{ maxWidth: 'sm', cols: 1 }]} mt="xl">
+                {form.values.logo && (
+                  <Stack spacing={0} pos="relative">
+                    <Image src={form.values.logo} withPlaceholder />
+                    <ActionIcon
+                      variant="filled"
+                      radius="xl"
+                      color="red"
+                      size="xs"
+                      pos="absolute"
+                      top={-10}
+                      right={-10}
+                      onClick={() => form.setFieldValue('logo', null)}
+                    >
+                      <IconX size="0.8rem" />
+                    </ActionIcon>
+                  </Stack>
+                )}
+              </SimpleGrid>
+            </div>
+          </Grid.Col>
+          <Grid.Col span={12}>
+            <Button fullWidth type="submit">
+              Хадгалах
+            </Button>
           </Grid.Col>
         </Grid>
-        <form
-          onSubmit={form.onSubmit(async (values) => {
-            await handleSubmit(values);
-          })}
-        >
-          <Grid mt="lg" gutter="xl">
-            <Grid.Col span={12}>
-              <ColorInput
-                label="Вебийн толгой хэсгийн өнгө"
-                placeholder="Өнгө сонгоно уу"
-                format="hex"
-                swatches={swatches}
-                {...form.getInputProps('header_color')}
-              />
-            </Grid.Col>
-            <Grid.Col span={12}>
-              <ColorInput
-                label="Вебийн хөл хэсгийн өнгө"
-                placeholder="Өнгө сонгоно уу"
-                format="hex"
-                swatches={swatches}
-                {...form.getInputProps('footer_color')}
-              />
-            </Grid.Col>
-            <Grid.Col span={12}>
-              <ColorInput
-                label="Вебийн дэвсгэр өнгө"
-                placeholder="Өнгө сонгоно уу"
-                format="hex"
-                swatches={swatches}
-                {...form.getInputProps('background_color')}
-              />
-            </Grid.Col>
-            <Grid.Col span={12}>
-              <Text weight={500} size="sm">
-                Байршлын мэдээлэл
-              </Text>
-              <CustomRichTextEditor editor={locationEditor} />
-            </Grid.Col>
-            <Grid.Col span={12}>
-              <Text weight={500} size="sm">
-                Ажлын цагийн мэдээлэл
-              </Text>
-              <CustomRichTextEditor editor={workHourEditor} />
-            </Grid.Col>
-            <Grid.Col span={12}>
-              <Text weight={500} size="sm">
-                Холбоо барих мэдээлэл
-              </Text>
-              <CustomRichTextEditor editor={contactEditor} />
-            </Grid.Col>
-
-            <Grid.Col span={12}>
-              <Text weight={500} size="sm">
-                Вебийн лого
-              </Text>
-              <div>
-                <Dropzone
-                  mt="xs"
-                  maxFiles={1}
-                  accept={[MIME_TYPES.png, MIME_TYPES.jpeg, MIME_TYPES.svg]}
-                  onDrop={(acceptedFiles) => {
-                    handleImageDrop(acceptedFiles);
-                  }}
-                  loading={isFileUploading}
-                >
-                  <Text align="center" size="sm">
-                    Та файлаа энд хуулна уу
-                  </Text>
-                </Dropzone>
-                <SimpleGrid cols={4} breakpoints={[{ maxWidth: 'sm', cols: 1 }]} mt="xl">
-                  {form.values.logo && (
-                    <Stack spacing={0} pos="relative">
-                      <Image src={form.values.logo} withPlaceholder />
-                      <ActionIcon
-                        variant="filled"
-                        radius="xl"
-                        color="red"
-                        size="xs"
-                        pos="absolute"
-                        top={-10}
-                        right={-10}
-                        onClick={() => form.setFieldValue('logo', null)}
-                      >
-                        <IconX size="0.8rem" />
-                      </ActionIcon>
-                    </Stack>
-                  )}
-                </SimpleGrid>
-              </div>
-            </Grid.Col>
-            <Grid.Col span={12}>
-              <Button fullWidth type="submit">
-                Хадгалах
-              </Button>
-            </Grid.Col>
-          </Grid>
-        </form>
-      </Container>
-    </DefaultLayout>
+      </form>
+    </Container>
   );
 }
 

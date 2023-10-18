@@ -47,10 +47,14 @@
     "cookies-next": "^2.1.1",
     "dayjs": "^1.11.6",
     "embla-carousel-react": "^7.0.3",
+    "html-react-parser": "^4.2.5",
+    "leaflet": "^1.9.4",
     "mantine-datatable": "^1.8.4",
     "next": "13.1.6",
     "react": "18.2.0",
-    "react-dom": "18.2.0"
+    "react-dom": "18.2.0",
+    "react-leaflet": "^4.2.1",
+    "sanitize-html": "^2.11.0"
   },
   "devDependencies": {
     "@babel/core": "^7.17.8",
