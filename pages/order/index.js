@@ -84,9 +84,9 @@ function Order({ userToken }) {
       setLoading(true);
       const from = (page - 1) * PAGE_SIZE;
       const res = await axios.get(
-        `${process.env.NEXT_PUBLIC_API}/admin/order/local?from=${dayjs(dates?.[0]).format(
+        `${process.env.NEXT_PUBLIC_API}/admin/order?fromDate=${dayjs(dates?.[0]).format(
           dateFormat
-        )}&to=${dayjs(dates?.[1]).format(
+        )}&untilDate=${dayjs(dates?.[1]).format(
           dateFormat
         )}&offset=${from}&limit=${PAGE_SIZE}&orderid=${debounced}`,
         {
@@ -96,7 +96,7 @@ function Order({ userToken }) {
         }
       );
       setRecords(res.data.data);
-      setTotal(res.data?.total);
+      setTotal(res.data.pagination.total);
       setLoading(false);
     } catch (e) {}
   }
@@ -114,7 +114,7 @@ function Order({ userToken }) {
     setUpdating(true);
     try {
       const res = await axios.put(
-        `${process.env.NEXT_PUBLIC_API}/admin/order/local`,
+        `${process.env.NEXT_PUBLIC_API}/admin/order`,
         { status: orderStatus, orderid: orderId },
         {
           headers: {
@@ -154,9 +154,9 @@ function Order({ userToken }) {
       setLoading(true);
       const from = (pageNumber - 1) * PAGE_SIZE;
       const res = await axios.get(
-        `${process.env.NEXT_PUBLIC_API}/admin/order/local?from=${dayjs(dates?.[0]).format(
+        `${process.env.NEXT_PUBLIC_API}/admin/order?fromDate=${dayjs(dates?.[0]).format(
           dateFormat
-        )}&to=${dayjs(dates?.[1]).format(
+        )}&untilDate=${dayjs(dates?.[1]).format(
           dateFormat
         )}&offset=${from}&limit=${PAGE_SIZE}&orderid=${debounced}&status=${
           orderFilterValue === 'all' ? '' : orderFilterValue
@@ -168,7 +168,7 @@ function Order({ userToken }) {
         }
       );
       setRecords(res.data.data);
-      setTotal(res.data?.total);
+      setTotal(res.data.pagination?.total);
       setLoading(false);
     } catch (e) {}
   };

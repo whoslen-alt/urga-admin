@@ -27,7 +27,8 @@ function OrderProductDetail({ products }) {
                 <Stack spacing="sm">
                   <Group position="apart" mt="xs" noWrap>
                     <Text>Тоо ширхэг:</Text>
-                    <Text>{e.qty + e.product.unit}</Text>
+                    {/* <Text>{e.qty + e.product.unit}</Text> */}
+                    <Text>{e.qty}</Text>
                   </Group>
                   <Group position="apart" noWrap>
                     <Text>Нэгж үнэ:</Text>

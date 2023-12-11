@@ -89,30 +89,30 @@ function Product({
     setLoading(true);
     const from = (page - 1) * PAGE_SIZE;
     const res = await axios(
-      `${process.env.NEXT_PUBLIC_API}/product/local/admin?offset=${from}&limit=${PAGE_SIZE}&query=${debounced}`,
+      `${process.env.NEXT_PUBLIC_API}/product?offset=${from}&limit=${PAGE_SIZE}&query=${debounced}`,
       {
         headers: {
           Authorization: `Bearer ${userToken}`,
         },
       }
     );
-    setRecords(res.data.data);
-    setTotal(res.data.total);
+    setRecords(res.data.result);
+    setTotal(res.data.result?.length);
     setLoading(false);
   }
   const fetchPage = async (pageNumber) => {
     setLoading(true);
     const from = (pageNumber - 1) * PAGE_SIZE;
     const res = await axios(
-      `${process.env.NEXT_PUBLIC_API}/product/local/admin?offset=${from}&limit=${PAGE_SIZE}&query=${debounced}`,
+      `${process.env.NEXT_PUBLIC_API}/product?offset=${from}&limit=${PAGE_SIZE}&query=${debounced}`,
       {
         headers: {
           Authorization: `Bearer ${userToken}`,
         },
       }
     );
-    setRecords(res.data.data);
-    setTotal(res.data.total);
+    setRecords(res.data.result);
+    setTotal(res.data.result?.length);
     setLoading(false);
   };
   const openProductEditingModal = (productData, type = 'edit') => {
@@ -299,228 +299,229 @@ function Product({
     setUploading(false);
   };
   return (
-      <Container fluid mx="xs" sx={{ maxHeight: '100%' }}>
-        <DeleteConfirmationDialog
-          isOpen={confirmationOpened}
-          close={handlers.close}
-          confirmationText="Барааг идэвхигүй болгох уу?"
-          thingToDelete={deletingProduct}
-          onConfirm={deleteProduct}
-          loading={deleting}
-        />
-        <ProductModal
-          initialData={editingProdData}
-          isOpen={opened}
-          close={close}
-          loading={updating}
-          userToken={userToken}
-          onSubmit={editingProdData?.create ? createProduct : updateProduct}
-          categories={{ mainCategories, parentCategories, childCategories }}
-        />
-        <ExcelUploader
-          isOpen={excelUploaderOpened}
-          close={closeExcelUploader}
-          loading={uploading}
-          onSubmit={uploadFormData}
-        />
-        <Grid position="apart" grow>
-          <Grid.Col span={2}>
-            <Text size="lg" weight={500}>
-              Бараанууд
-            </Text>
-          </Grid.Col>
-          <Grid.Col span={4} offset={3}>
-            <TextInput
-              placeholder="Бараа хайх... (Нэр)"
-              rightSection={<IconSearch size="1rem" />}
+    <Container fluid mx="xs" sx={{ maxHeight: '100%' }}>
+      <DeleteConfirmationDialog
+        isOpen={confirmationOpened}
+        close={handlers.close}
+        confirmationText="Барааг идэвхигүй болгох уу?"
+        thingToDelete={deletingProduct}
+        onConfirm={deleteProduct}
+        loading={deleting}
+      />
+      {/* <ProductModal
+        initialData={editingProdData}
+        isOpen={opened}
+        close={close}
+        loading={updating}
+        userToken={userToken}
+        onSubmit={editingProdData?.create ? createProduct : updateProduct}
+        categories={{ mainCategories, parentCategories, childCategories }}
+      /> */}
+      <ExcelUploader
+        isOpen={excelUploaderOpened}
+        close={closeExcelUploader}
+        loading={uploading}
+        onSubmit={uploadFormData}
+      />
+      <Grid position="apart" grow>
+        <Grid.Col span={2}>
+          <Text size="lg" weight={500}>
+            Бараанууд
+          </Text>
+        </Grid.Col>
+        <Grid.Col span={4} offset={3}>
+          <TextInput
+            placeholder="Бараа хайх... (Нэр)"
+            rightSection={<IconSearch size="1rem" />}
+            radius="xl"
+            styles={{ root: { flexGrow: 2 } }}
+            onChange={(e) => {
+              e.preventDefault();
+              setQuery(e.currentTarget.value);
+            }}
+          />
+        </Grid.Col>
+        <Grid.Col span={2}>
+          <Group position="center">
+            <Button
+              variant="filled"
               radius="xl"
-              styles={{ root: { flexGrow: 2 } }}
-              onChange={(e) => {
+              styles={{ label: { padding: 12 } }}
+              onClick={(e) => {
                 e.preventDefault();
-                setQuery(e.currentTarget.value);
+                openProductEditingModal({}, 'creation');
               }}
-            />
-          </Grid.Col>
-          <Grid.Col span={2}>
-            <Group position="center">
-              <Button
-                variant="filled"
-                radius="xl"
-                styles={{ label: { padding: 12 } }}
+            >
+              Бараа Үүсгэх
+            </Button>
+            <Tooltip label="Excel файлаар бараа оруулах" withArrow>
+              <ActionIcon
                 onClick={(e) => {
                   e.preventDefault();
-                  openProductEditingModal({}, 'creation');
+                  openExcelUploader();
                 }}
               >
-                Бараа Үүсгэх
-              </Button>
-              <Tooltip label="Excel файлаар бараа оруулах" withArrow>
+                <IconExcel style={{ fontSize: '2em' }} />
+              </ActionIcon>
+            </Tooltip>
+          </Group>
+        </Grid.Col>
+      </Grid>
+
+      <DataTable
+        height="75vh"
+        minHeight="75vh"
+        mt="lg"
+        fontSize="xs"
+        borderRadius="sm"
+        withBorder
+        withColumnBorders
+        highlightOnHover
+        records={records}
+        selectedRecords={selectedRecords}
+        onSelectedRecordsChange={setSelectedRecords}
+        fetching={loading}
+        page={page}
+        onPageChange={(pageNum) => {
+          setPage(pageNum);
+          fetchPage(pageNum);
+        }}
+        totalRecords={total}
+        recordsPerPage={PAGE_SIZE}
+        noRecordsText="Бараа олдсонгүй"
+        rowExpansion={
+          {
+            // content: ({ record }) => (
+            //   <ProductDetails
+            //     initialData={record}
+            //     categories={{ mainCategories, parentCategories, childCategories }}
+            //   />
+            // ),
+          }
+        }
+        columns={[
+          {
+            accessor: 'additionalImage',
+            title: 'Зураг',
+            width: 100,
+            render: ({ additionalImage }) => (
+              // product_image?.images?.[0] ? (
+              //   <Center>
+              //     <Image
+              //       src={`${product_image?.images?.[0]}`}
+              //       alt="Зураг"
+              //       style={{ objectFit: 'contain' }}
+              //       height={60}
+              //       width={60}
+              //     />
+              //   </Center>
+              // ) : (
+              //   <Center>
+              //     <IconPhotoOff color="gray" />
+              //   </Center>
+              // ),
+              <div></div>
+            ),
+          },
+          {
+            accessor: 'name',
+            title: 'Нэр',
+            width: 200,
+            render: (r) => <Text weight={500}>{r.name}</Text>,
+          },
+          {
+            accessor: 'balance',
+            title: 'Үлдэгдэл',
+            textAlignment: 'center',
+            width: 85,
+            // render: (r) => (
+            //   <Text>
+            //     {r.instock ? r.instock : 0} {r.unit}
+            //   </Text>
+            // ),
+          },
+          {
+            accessor: 'listPrice',
+            title: 'Нэгж үнэ (₮)',
+            textAlignment: 'center',
+            width: 95,
+            render: ({ listPrice }) => <Text>{Intl.NumberFormat().format(listPrice)}</Text>,
+          },
+
+          { accessor: 'note', title: 'Тэмдэглэл' },
+
+          {
+            accessor: 'description',
+            title: 'Тайлбар',
+            render: ({ description }) => <Text lineClamp={5}>{description}</Text>,
+          },
+          {
+            accessor: 'detailed_description',
+            title: 'Дэлгэрэнгүй тайлбар',
+            render: ({ detailed_description }) => <Text lineClamp={5}>{detailed_description}</Text>,
+          },
+          // {
+          //   accessor: 'active',
+          //   title: 'Идэвхитэй эсэх',
+          //   width: 130,
+          //   textAlignment: 'center',
+          //   render: (record) => (
+          //     <Badge
+          //       color={record.active ? 'green' : 'red'}
+          //       size="sm"
+          //       variant="filled"
+          //       styles={{
+          //         inner: {
+          //           textTransform: 'capitalize',
+          //           fontWeight: 500,
+          //         },
+          //         root: {
+          //           padding: '8px 8px 9px 8px',
+          //         },
+          //       }}
+          //     >
+          //       {record.active ? 'Идэвхитэй' : 'Идэвхигүй'}
+          //     </Badge>
+          //   ),
+          // },
+          {
+            accessor: 'actions',
+            title: <Text>Үйлдэл</Text>,
+            textAlignment: 'center',
+            width: 80,
+            render: (record) => (
+              <Group spacing={4} noWrap>
                 <ActionIcon
+                  color="blue"
                   onClick={(e) => {
                     e.preventDefault();
-                    openExcelUploader();
+                    openProductEditingModal(record);
                   }}
                 >
-                  <IconExcel style={{ fontSize: '2em' }} />
+                  <IconEdit size={16} />
                 </ActionIcon>
-              </Tooltip>
-            </Group>
-          </Grid.Col>
-        </Grid>
-
-        <DataTable
-          height="75vh"
-          minHeight="75vh"
-          mt="lg"
-          fontSize="xs"
-          borderRadius="sm"
-          withBorder
-          withColumnBorders
-          highlightOnHover
-          records={records}
-          selectedRecords={selectedRecords}
-          onSelectedRecordsChange={setSelectedRecords}
-          fetching={loading}
-          page={page}
-          onPageChange={(pageNum) => {
-            setPage(pageNum);
-            fetchPage(pageNum);
-          }}
-          totalRecords={total}
-          recordsPerPage={PAGE_SIZE}
-          noRecordsText="Бараа олдсонгүй"
-          rowExpansion={{
-            content: ({ record }) => (
-              <ProductDetails
-                initialData={record}
-                categories={{ mainCategories, parentCategories, childCategories }}
-              />
-            ),
-          }}
-          columns={[
-            {
-              accessor: 'product_image',
-              title: 'Зураг',
-              width: 100,
-              render: ({ product_image }) =>
-                product_image?.images?.[0] ? (
-                  <Center>
-                    <Image
-                      src={`${product_image?.images?.[0]}`}
-                      alt="Зураг"
-                      style={{ objectFit: 'contain' }}
-                      height={60}
-                      width={60}
-                    />
-                  </Center>
-                ) : (
-                  <Center>
-                    <IconPhotoOff color="gray" />
-                  </Center>
-                ),
-            },
-            {
-              accessor: 'name',
-              title: 'Нэр',
-              width: 200,
-              render: (r) => <Text weight={500}>{r.name}</Text>,
-            },
-
-            {
-              accessor: 'instock',
-              title: 'Үлдэгдэл',
-              textAlignment: 'center',
-              width: 85,
-              render: (r) => (
-                <Text>
-                  {r.instock ? r.instock : 0} {r.unit}
-                </Text>
-              ),
-            },
-            {
-              accessor: 'price',
-              title: 'Нэгж үнэ (₮)',
-              textAlignment: 'center',
-              width: 95,
-              render: ({ price }) => <Text>{Intl.NumberFormat().format(price)}</Text>,
-            },
-
-            { accessor: 'note', title: 'Тэмдэглэл' },
-
-            {
-              accessor: 'description',
-              title: 'Тайлбар',
-              render: ({ description }) => <Text lineClamp={5}>{description}</Text>,
-            },
-            {
-              accessor: 'detailed_description',
-              title: 'Дэлгэрэнгүй тайлбар',
-              render: ({ detailed_description }) => (
-                <Text lineClamp={5}>{detailed_description}</Text>
-              ),
-            },
-            {
-              accessor: 'active',
-              title: 'Идэвхитэй эсэх',
-              width: 130,
-              textAlignment: 'center',
-              render: (record) => (
-                <Badge
-                  color={record.active ? 'green' : 'red'}
-                  size="sm"
-                  variant="filled"
-                  styles={{
-                    inner: {
-                      textTransform: 'capitalize',
-                      fontWeight: 500,
-                    },
-                    root: {
-                      padding: '8px 8px 9px 8px',
-                    },
+                <ActionIcon
+                  color="red"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    openDeleteConfirmation(record.id, record.name);
                   }}
                 >
-                  {record.active ? 'Идэвхитэй' : 'Идэвхигүй'}
-                </Badge>
-              ),
-            },
-            {
-              accessor: 'actions',
-              title: <Text>Үйлдэл</Text>,
-              textAlignment: 'center',
-              width: 80,
-              render: (record) => (
-                <Group spacing={4} noWrap>
-                  <ActionIcon
-                    color="blue"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      openProductEditingModal(record);
-                    }}
-                  >
-                    <IconEdit size={16} />
-                  </ActionIcon>
-                  <ActionIcon
-                    color="red"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      openDeleteConfirmation(record.id, record.name);
-                    }}
-                  >
-                    <IconTrash size={16} />
-                  </ActionIcon>
-                </Group>
-              ),
-            },
-          ]}
-        />
-      </Container>
+                  <IconTrash size={16} />
+                </ActionIcon>
+              </Group>
+            ),
+          },
+        ]}
+      />
+    </Container>
   );
 }
 export const getServerSideProps = requireAuthentication(async ({ req, res }) => {
   const from = 0;
   const to = PAGE_SIZE;
   const response = await axios.get(
-    `${process.env.NEXT_PUBLIC_API}/product/local/admin?offset=${from}&limit=${to}`,
+    `${process.env.NEXT_PUBLIC_API}/product?offset=${from}&limit=${to}`,
     {
       headers: {
         Authorization: `Bearer ${req.cookies.urga_admin_user_jwt}`,
@@ -528,29 +529,29 @@ export const getServerSideProps = requireAuthentication(async ({ req, res }) => 
     }
   );
 
-  const mainCats = await axios.get(`${process.env.NEXT_PUBLIC_API}/admin/category/main`, {
-    headers: {
-      Authorization: `Bearer ${req.cookies.urga_admin_user_jwt}`,
-    },
-  });
-  const parentCats = await axios.get(`${process.env.NEXT_PUBLIC_API}/admin/category/parent`, {
-    headers: {
-      Authorization: `Bearer ${req.cookies.urga_admin_user_jwt}`,
-    },
-  });
-  const childCats = await axios.get(`${process.env.NEXT_PUBLIC_API}/admin/category/child`, {
-    headers: {
-      Authorization: `Bearer ${req.cookies.urga_admin_user_jwt}`,
-    },
-  });
+  // const mainCats = await axios.get(`${process.env.NEXT_PUBLIC_API}/admin/category/main`, {
+  //   headers: {
+  //     Authorization: `Bearer ${req.cookies.urga_admin_user_jwt}`,
+  //   },
+  // });
+  // const parentCats = await axios.get(`${process.env.NEXT_PUBLIC_API}/admin/category/parent`, {
+  //   headers: {
+  //     Authorization: `Bearer ${req.cookies.urga_admin_user_jwt}`,
+  //   },
+  // });
+  // const childCats = await axios.get(`${process.env.NEXT_PUBLIC_API}/admin/category/child`, {
+  //   headers: {
+  //     Authorization: `Bearer ${req.cookies.urga_admin_user_jwt}`,
+  //   },
+  // });
 
   return {
     props: {
-      products: response.data.data,
-      mainCategories: mainCats.data.data,
-      parentCategories: parentCats.data.data,
-      childCategories: childCats.data.data,
-      total: response.data.total,
+      products: response.data.result,
+      // mainCategories: mainCats.data.data,
+      // parentCategories: parentCats.data.data,
+      // childCategories: childCats.data.data,
+      total: response.data.result?.length,
       userToken: req.cookies.urga_admin_user_jwt,
     },
   };
