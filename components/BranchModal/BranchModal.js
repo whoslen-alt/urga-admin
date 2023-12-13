@@ -158,11 +158,12 @@ export function BranchModal({ opened, close, loading, onSubmit, initialData, use
       setIsFileUploading(true);
       for (const file of acceptedFiles) {
         formData.append('img', file, file.name);
+        formData.append('folder', 'branch');
         axios
-          .post(`${process.env.NEXT_PUBLIC_API}/admin/upload`, formData, config)
+          .post(`${process.env.NEXT_PUBLIC_API}/admin/product/upload`, formData, config)
           .then((value) => {
             if (value.status === 200) {
-              const imgUrl = value.data.data;
+              const imgUrl = value.data.url;
               form.insertListItem('images', imgUrl);
             }
             return setIsFileUploading(false);

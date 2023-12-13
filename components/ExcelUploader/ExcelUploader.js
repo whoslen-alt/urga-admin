@@ -1,7 +1,7 @@
 import { Modal, Button, Group, FileInput, LoadingOverlay, Stack, rem } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { IconUpload } from '@tabler/icons';
-import IconExcel from '~icons/mdi/file-excel-outline.jsx';
+// import IconExcel from '~icons/mdi/file-excel-outline.jsx';
 import { useEffect } from 'react';
 function ExcelUploader({ isOpen, close, onSubmit, loading }) {
   const form = useForm({
@@ -42,7 +42,7 @@ function ExcelUploader({ isOpen, close, onSubmit, loading }) {
             description="Зөвхөн бараа бүртгэлийн загварын дагуу бэлтгэгдсэн excel файл байна"
             placeholder="Файл хуулах"
             accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"
-            icon={<IconExcel style={{ fontSize: rem(14) }} />}
+            // icon={<IconExcel style={{ fontSize: rem(14) }} />}
             {...form.getInputProps('file')}
           />
           <FileInput

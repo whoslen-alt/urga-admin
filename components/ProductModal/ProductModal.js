@@ -82,12 +82,13 @@ function ProductModal({ initialData, isOpen, close, onSubmit, loading, userToken
           .then((value) => {
             if (value.status === 200) {
               const imgUrl = value.data.url;
-              form.insertListItem('additionalImage', { order: 1, url: imgUrl });
+              form.insertListItem('additionalImage', { url: imgUrl });
             }
             return setIsFileUploading(false);
           })
           .catch((err) => setIsFileUploading(false));
         formData.delete('img');
+        formData.delete('productid');
       }
     }
   };
@@ -277,9 +278,9 @@ function ProductModal({ initialData, isOpen, close, onSubmit, loading, userToken
               </Dropzone>
               <SimpleGrid cols={4} breakpoints={[{ maxWidth: 'sm', cols: 1 }]} mt="xl">
                 {form.values.additionalImage &&
-                  form.values.additionalImage?.map((imageUrl, index) => (
-                    <Stack key={imageUrl + index} spacing={0} pos="relative">
-                      <Image src={imageUrl} withPlaceholder />
+                  form.values.additionalImage?.map((image, index) => (
+                    <Stack key={image?.key + index} spacing={0} pos="relative">
+                      <Image src={image?.url} withPlaceholder />
                       <ActionIcon
                         variant="filled"
                         radius="xl"
@@ -290,7 +291,7 @@ function ProductModal({ initialData, isOpen, close, onSubmit, loading, userToken
                         right={-10}
                         onClick={() => {
                           form.removeListItem('additionalImage', index);
-                          form.insertListItem('deletedImages', imageUrl);
+                          form.insertListItem('deletedImages', image?.key);
                         }}
                       >
                         <IconX size="0.8rem" />

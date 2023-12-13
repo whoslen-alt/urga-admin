@@ -32,7 +32,7 @@ import {
   IconUsers,
   IconX,
 } from '@tabler/icons';
-import IconExcel from '~icons/vscode-icons/file-type-excel.jsx';
+// import IconExcel from '~icons/vscode-icons/file-type-excel.jsx';
 
 import axios from 'axios';
 import ProductDetails from '../../components/ProductDetails/ProductDetails';
@@ -112,6 +112,7 @@ function Product({
         },
       }
     );
+    setPage(1);
     setRecords(res.data.result);
     setTotal(res.data.pagination?.total);
     setLoading(false);
@@ -135,7 +136,7 @@ function Product({
         },
         data: { product_id: id },
       });
-      if (res.status === 200 && res.data?.success) {
+      if (res.status === 200) {
         showNotification({
           title: 'Бараа устгалт',
           message: res.data.message,
@@ -187,7 +188,7 @@ function Product({
 
         config
       );
-      if (res.status === 200 && res.data?.success) {
+      if (res.status === 200) {
         showNotification({
           title,
           message: res.data.message,
@@ -224,6 +225,7 @@ function Product({
           description: values.description,
           instruction: values.instruction,
           detailed_description: values.detailed_description,
+          deletedImages: values.deletedImages,
         },
         config
       );
@@ -267,7 +269,7 @@ function Product({
       const res = await axios.post(`${process.env.NEXT_PUBLIC_API}/product/excel?excel`, formData, {
         headers: { 'Content-Type': 'multipart/form-data', Authorization: `Bearer ${userToken}` },
       });
-      if (res.status === 200 && res.data?.success) {
+      if (res.status === 200) {
         showNotification({
           title,
           message: res.data.message,
@@ -375,7 +377,7 @@ function Product({
               additionalImage?.[0] ? (
                 <Center>
                   <Image
-                    // src={`${additionalImage?.[0]?.url}`}
+                    src={`${additionalImage?.[0]?.url}`}
                     alt="Зураг"
                     style={{ objectFit: 'contain' }}
                     height={60}

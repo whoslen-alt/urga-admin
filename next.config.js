@@ -19,8 +19,12 @@ module.exports = {
         hostname: 'api.urga.mn',
       },
       {
-        protocol: 'http',
+        protocol: 'https',
         hostname: 'test.urga.mn',
+      },
+      {
+        protocol: 'http',
+        hostname: 'api.urga.mn',
       },
     ],
   },
