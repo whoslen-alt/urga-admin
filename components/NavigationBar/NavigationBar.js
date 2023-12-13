@@ -1,7 +1,4 @@
-import Link from 'next/link';
-import { Flex, Group, Navbar, NavLink, Text, ThemeIcon, UnstyledButton } from '@mantine/core';
-import { useState } from 'react';
-import Image from 'next/image';
+import { Group, Navbar, Text, ThemeIcon, UnstyledButton } from '@mantine/core';
 import { MainLinks } from './MainLinks/MainLinks';
 import { IconLogout } from '@tabler/icons';
 import axios from 'axios';
@@ -11,13 +8,18 @@ function NavigationBar({ isOpen }) {
   const handleLogout = async () => {
     axios
       .get('api/authentication/logout')
-      .then((value) => {
+      .then(() => {
         router.reload();
       })
       .catch((err) => {});
   };
   return (
-    <Navbar p="sm" hiddenBreakpoint="sm" hidden={!isOpen} width={{ sm: 200, lg: 250 }}>
+    <Navbar
+      p="sm"
+      hiddenBreakpoint="sm"
+      hidden={!isOpen}
+      width={{ sm: 250, md: 250, xl: 250, lg: 250 }}
+    >
       <Navbar.Section grow mt="sm">
         <MainLinks />
       </Navbar.Section>

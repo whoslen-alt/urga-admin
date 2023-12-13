@@ -10,7 +10,6 @@ import {
   Stack,
 } from '@mantine/core';
 import { useState, useEffect } from 'react';
-import DefaultLayout from '../../components/Layouts/DefaultLayout';
 import { IconCheck, IconX } from '@tabler/icons';
 import requireAuthentication from '../../lib/requireAuthentication';
 import axios from 'axios';
@@ -113,9 +112,9 @@ function WebConfig({ userToken }) {
       const configData = res.data?.data;
       if (configData) {
         form.setValues({
-          header_color: configData?.header_color,
-          footer_color: configData?.footer_color,
-          background_color: configData?.background_color,
+          header_color: configData?.header_color || '',
+          footer_color: configData?.footer_color || '',
+          background_color: configData?.background_color || '',
           logo: configData?.logo,
         });
         setEditors({

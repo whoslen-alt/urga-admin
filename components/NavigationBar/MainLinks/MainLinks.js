@@ -1,11 +1,8 @@
 import {
   IconList,
-  IconUser,
   IconPackage,
-  IconGlobe,
   IconBrowser,
   IconCheckupList,
-  IconChecklist,
   IconUsers,
   IconUnlink,
 } from '@tabler/icons';
@@ -43,7 +40,7 @@ function MainLink({ icon, label, link }) {
 }
 
 const data = [
-  { icon: <IconList size={16} />, label: 'Ангилалууд', link: '/category' },
+  // { icon: <IconList size={16} />, label: 'Ангилалууд', link: '/category' },
   { icon: <IconPackage size={16} />, label: 'Бараанууд', link: '/product' },
   { icon: <IconCheckupList size={16} />, label: 'Захиалгууд', link: '/order' },
   { icon: <IconUsers size={16} />, label: 'Админ хэрэглэгчид', link: '/user' },
@@ -53,5 +50,5 @@ const data = [
 
 export function MainLinks() {
   const links = data.map((link) => <MainLink {...link} key={link.label} />);
-  return <div>{links}</div>;
+  return links;
 }

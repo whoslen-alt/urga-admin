@@ -27,41 +27,41 @@ import { IconArrowBack, IconX } from '@tabler/icons';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
 
-function ProductModal({ initialData, isOpen, close, categories, onSubmit, loading, userToken }) {
+function ProductModal({ initialData, isOpen, close, onSubmit, loading, userToken }) {
   const [isFileUploading, setIsFileUploading] = useState(false);
   const form = useForm({
     initialValues: {
       name: initialData?.name,
-      main_cat_id: initialData?.main_cat_id?.map((e) => e.toString()),
-      parent_cat_id: initialData?.parent_cat_id?.map((e) => e.toString()),
-      child_cat_id: initialData?.child_cat_id?.map((e) => e.toString()),
+      // main_cat_id: initialData?.main_cat_id?.map((e) => e.toString()),
+      // parent_cat_id: initialData?.parent_cat_id?.map((e) => e.toString()),
+      // child_cat_id: initialData?.child_cat_id?.map((e) => e.toString()),
       note: initialData?.note,
       description: initialData?.description,
       instruction: initialData?.instruction,
       detailed_description: initialData?.detailed_description,
-      packaging: initialData?.packaging,
-      instock: initialData?.instock,
-      price: initialData?.price,
-      promo_price: initialData?.promo_price,
-      wholesale_price: initialData?.wholesale_price,
-      wholesale_qty: initialData?.wholesale_qty,
-      images: [],
-      active: initialData?.active,
-      deleted_images: [],
+      qtyPerPackage: initialData?.qtyPerPackage,
+      balance: initialData?.balance,
+      listPrice: initialData?.listPrice,
+      // promo_price: initialData?.promo_price,
+      wholePrice: initialData?.wholePrice,
+      wholeQty: initialData?.wholeQty,
+      additionalImage: [],
+      // active: initialData?.active,
+      deletedImages: [],
     },
     validate: {
       name: (value) => (value ? null : 'Нэр оруулна уу'),
-      instock: (value) => (value ? (isNaN(value) ? 'Тоо оруулна уу' : null) : null),
-      packaging: (value) => (value ? (isNaN(value) ? 'Тоо оруулна уу' : null) : null),
-      price: (value) => (value ? (isNaN(value) ? 'Тоо оруулна уу' : null) : null),
-      promo_price: (value) => (value ? (isNaN(value) ? 'Тоо оруулна уу' : null) : null),
-      wholesale_price: (value) => (value ? (isNaN(value) ? 'Тоо оруулна уу' : null) : null),
-      wholesale_qty: (value) => (value ? (isNaN(value) ? 'Тоо оруулна уу' : null) : null),
+      balance: (value) => (value ? (isNaN(value) ? 'Тоо оруулна уу' : null) : null),
+      qtyPerPackage: (value) => (value ? (isNaN(value) ? 'Тоо оруулна уу' : null) : null),
+      listPrice: (value) => (value ? (isNaN(value) ? 'Тоо оруулна уу' : null) : null),
+      // promo_price: (value) => (value ? (isNaN(value) ? 'Тоо оруулна уу' : null) : null),
+      wholePrice: (value) => (value ? (isNaN(value) ? 'Тоо оруулна уу' : null) : null),
+      wholeQty: (value) => (value ? (isNaN(value) ? 'Тоо оруулна уу' : null) : null),
     },
   });
   useEffect(() => {
     if (initialData) {
-      form.setFieldValue('images', initialData?.product_image?.images || []);
+      form.setFieldValue('additionalImage', initialData?.additionalImage || []);
     }
   }, [initialData]);
   const config = {
@@ -76,12 +76,13 @@ function ProductModal({ initialData, isOpen, close, categories, onSubmit, loadin
       setIsFileUploading(true);
       for (const file of acceptedFiles) {
         formData.append('img', file, file.name);
+        formData.append('productid', initialData?.id);
         axios
-          .post(`${process.env.NEXT_PUBLIC_API}/admin/upload`, formData, config)
+          .post(`${process.env.NEXT_PUBLIC_API}/admin/product/upload`, formData, config)
           .then((value) => {
             if (value.status === 200) {
-              const imgUrl = value.data.data;
-              form.insertListItem('images', imgUrl);
+              const imgUrl = value.data.url;
+              form.insertListItem('additionalImage', { order: 1, url: imgUrl });
             }
             return setIsFileUploading(false);
           })
@@ -122,7 +123,7 @@ function ProductModal({ initialData, isOpen, close, categories, onSubmit, loadin
             <Grid.Col span={9} xs={9}>
               <TextInput label="Барааны нэр" {...form.getInputProps('name')} size="xs" />
             </Grid.Col>
-            <Grid.Col span={3} xs={3}>
+            {/* <Grid.Col span={3} xs={3}>
               <Select
                 label="Идэвхитэй эсэх"
                 data={[
@@ -132,12 +133,14 @@ function ProductModal({ initialData, isOpen, close, categories, onSubmit, loadin
                 {...form.getInputProps('active')}
                 size="xs"
               />
-            </Grid.Col>
-            <Grid.Col span={4} xs={4}>
+            </Grid.Col> */}
+            {/* <Grid.Col span={4} xs={4}>
               <MultiSelect
-                data={categories.mainCategories.map((e) => {
-                  return { label: e.name, value: e.id };
-                })}
+                data={
+                  categories?.mainCategories?.map((e) => {
+                    return { label: e.name, value: e.id };
+                  }) || []
+                }
                 label="Ерөнхий ангилал"
                 size="xs"
                 {...form.getInputProps('main_cat_id')}
@@ -145,9 +148,11 @@ function ProductModal({ initialData, isOpen, close, categories, onSubmit, loadin
             </Grid.Col>
             <Grid.Col span={4} xs={4}>
               <MultiSelect
-                data={categories.parentCategories.map((e) => {
-                  return { label: e.name, value: e.id };
-                })}
+                data={
+                  categories?.parentCategories?.map((e) => {
+                    return { label: e.name, value: e.id };
+                  }) || []
+                }
                 label="Дэд ангилал"
                 size="xs"
                 {...form.getInputProps('parent_cat_id')}
@@ -155,18 +160,20 @@ function ProductModal({ initialData, isOpen, close, categories, onSubmit, loadin
             </Grid.Col>
             <Grid.Col span={4} xs={4}>
               <MultiSelect
-                data={categories.childCategories.map((e) => {
-                  return { label: e.name, value: e.id };
-                })}
+                data={
+                  categories?.childCategories?.map((e) => {
+                    return { label: e.name, value: e.id };
+                  }) || []
+                }
                 label="Барааны ангилал"
                 size="xs"
                 {...form.getInputProps('child_cat_id')}
               />
-            </Grid.Col>
+            </Grid.Col> */}
             <Grid.Col span={3} xs={3}>
               <TextInput
                 label="Үлдэгдэл"
-                {...form.getInputProps('instock')}
+                {...form.getInputProps('balance')}
                 size="xs"
                 rightSection={<Text size="xs">{initialData?.unit}</Text>}
               />
@@ -174,7 +181,7 @@ function ProductModal({ initialData, isOpen, close, categories, onSubmit, loadin
             <Grid.Col span={3} xs={3}>
               <TextInput
                 label="Савлагаа"
-                {...form.getInputProps('packaging')}
+                {...form.getInputProps('qtyPerPackage')}
                 size="xs"
                 rightSection={<Text size="xs">{initialData?.unit}</Text>}
               />
@@ -182,23 +189,23 @@ function ProductModal({ initialData, isOpen, close, categories, onSubmit, loadin
             <Grid.Col span={3} xs={3}>
               <TextInput
                 label="Нэгж үнэ"
-                {...form.getInputProps('price')}
+                {...form.getInputProps('listPrice')}
                 size="xs"
                 rightSection={<Text size="xs">₮</Text>}
               />
             </Grid.Col>
-            <Grid.Col span={3} xs={3}>
+            {/* <Grid.Col span={3} xs={3}>
               <TextInput
                 label="Хямдралтай үнэ"
                 {...form.getInputProps('promo_price')}
                 size="xs"
                 rightSection={<Text size="xs">₮</Text>}
               />
-            </Grid.Col>
+            </Grid.Col> */}
             <Grid.Col span={3} xs={3}>
               <TextInput
                 label="Бөөний тоо ширхэг"
-                {...form.getInputProps('wholesale_qty')}
+                {...form.getInputProps('wholeQty')}
                 size="xs"
                 rightSection={<Text size="xs">{initialData?.unit}</Text>}
               />
@@ -206,7 +213,7 @@ function ProductModal({ initialData, isOpen, close, categories, onSubmit, loadin
             <Grid.Col span={3} xs={3}>
               <TextInput
                 label="Бөөний үнэ"
-                {...form.getInputProps('wholesale_price')}
+                {...form.getInputProps('wholePrice')}
                 size="xs"
                 rightSection={<Text size="xs">₮</Text>}
               />
@@ -253,18 +260,6 @@ function ProductModal({ initialData, isOpen, close, categories, onSubmit, loadin
                 {...form.getInputProps('detailed_description')}
               />
             </Grid.Col>
-            {/* <Grid.Col span={12}>
-              <FileInput
-                size="xs"
-                onChange={(value, e) => {
-                  handleUpload(value);
-                  
-                }} 
-                label="Барааны зураг оруулах"
-                placeholder="3 аас дээшгүй зураг оруулна уу!"
-                multiple
-              />
-            </Grid.Col> */}
             <Grid.Col span={12}>
               <Text size="xs" weight="bold">
                 Барааны зураг оруулах
@@ -281,8 +276,8 @@ function ProductModal({ initialData, isOpen, close, categories, onSubmit, loadin
                 </Text>
               </Dropzone>
               <SimpleGrid cols={4} breakpoints={[{ maxWidth: 'sm', cols: 1 }]} mt="xl">
-                {form.values.images &&
-                  form.values.images?.map((imageUrl, index) => (
+                {form.values.additionalImage &&
+                  form.values.additionalImage?.map((imageUrl, index) => (
                     <Stack key={imageUrl + index} spacing={0} pos="relative">
                       <Image src={imageUrl} withPlaceholder />
                       <ActionIcon
@@ -294,8 +289,8 @@ function ProductModal({ initialData, isOpen, close, categories, onSubmit, loadin
                         top={-10}
                         right={-10}
                         onClick={() => {
-                          form.removeListItem('images', index);
-                          form.insertListItem('deleted_images', imageUrl);
+                          form.removeListItem('additionalImage', index);
+                          form.insertListItem('deletedImages', imageUrl);
                         }}
                       >
                         <IconX size="0.8rem" />

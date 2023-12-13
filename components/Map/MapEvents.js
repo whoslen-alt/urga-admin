@@ -5,11 +5,7 @@ const DynamicMapEvents = dynamic(() => import('./DynamicMapEvents'), {
 });
 
 const MapEvents = ({ setLatLng }) => {
-  return (
-    <div>
-      <DynamicMapEvents setLatLng={setLatLng} />
-    </div>
-  );
+  return <DynamicMapEvents setLatLng={setLatLng} />;
 };
 
 export default MapEvents;

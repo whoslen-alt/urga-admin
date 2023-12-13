@@ -19,7 +19,6 @@ import {
 } from '@mantine/core';
 import { DataTable } from 'mantine-datatable';
 import { useState, useEffect } from 'react';
-import DefaultLayout from '../../components/Layouts/DefaultLayout';
 import {
   IconBox,
   IconCheck,
@@ -50,9 +49,9 @@ const PAGE_SIZE = 15;
 function Product({
   products,
   total: totalProducts,
-  mainCategories,
-  parentCategories,
-  childCategories,
+  // mainCategories,
+  // parentCategories,
+  // childCategories,
   userToken,
 }) {
   const [selectedRecords, setSelectedRecords] = useState([]);
@@ -69,12 +68,13 @@ function Product({
   const [excelUploaderOpened, { open: openExcelUploader, close: closeExcelUploader }] =
     useDisclosure(false);
   const [confirmationOpened, handlers] = useDisclosure(false);
-  const [editingProdData, setEditingProdData] = useState();
+  const [editingProdData, setEditingProdData] = useState(null);
   const [debounced] = useDebouncedValue(query, 500);
 
   useEffect(() => {
     handleSearch();
   }, [debounced]);
+
   useEffect(() => {
     setPage(1);
   }, [handleSearch]);
@@ -97,9 +97,10 @@ function Product({
       }
     );
     setRecords(res.data.result);
-    setTotal(res.data.result?.length);
+    setTotal(res.data.pagination?.total);
     setLoading(false);
   }
+
   const fetchPage = async (pageNumber) => {
     setLoading(true);
     const from = (pageNumber - 1) * PAGE_SIZE;
@@ -112,9 +113,10 @@ function Product({
       }
     );
     setRecords(res.data.result);
-    setTotal(res.data.result?.length);
+    setTotal(res.data.pagination?.total);
     setLoading(false);
   };
+
   const openProductEditingModal = (productData, type = 'edit') => {
     if (type === 'creation') {
       setEditingProdData({ create: true });
@@ -123,6 +125,7 @@ function Product({
     }
     open();
   };
+
   const deleteProduct = async (id) => {
     setDeleting(true);
     try {
@@ -157,6 +160,7 @@ function Product({
     setDeleting(false);
     handlers.close();
   };
+
   const createProduct = async (values) => {
     setUpdating(true);
     const title = 'Бараа үүсгэлт';
@@ -207,36 +211,23 @@ function Product({
     }
     setUpdating(false);
   };
+
   const updateProduct = async (values) => {
     setUpdating(true);
     const title = 'Барааны мэдээлэл шинэчлэлт';
     try {
       const res = await axios.put(
-        `${process.env.NEXT_PUBLIC_API}/admin/product/local`,
+        `${process.env.NEXT_PUBLIC_API}/admin/product`,
         {
-          product_id: values.id,
-          name: values.name,
+          id: values.id,
+          note: values.note,
           description: values.description,
-          main_cat_id: values.main_cat_id ? values.main_cat_id : [],
-          parent_cat_id: values.parent_cat_id ? values.parent_cat_id : [],
-          child_cat_id: values.child_cat_id ? values.child_cat_id : [],
-          packaging: values.packaging,
-          instock: values.instock,
-          price: values.price,
           instruction: values.instruction,
           detailed_description: values.detailed_description,
-          note: values.note,
-          promo_price: values.promo_price,
-          wholesale_price: values.wholesale_price,
-          wholesale_qty: values.wholesale_qty,
-          images: values.images,
-          active: values.active,
-          deleted_images: values.deleted_images,
         },
-
         config
       );
-      if (res.status === 200 && res.data?.success) {
+      if (res.status === 200) {
         showNotification({
           title,
           message: res.data.message,
@@ -260,6 +251,7 @@ function Product({
     }
     setUpdating(false);
   };
+
   const openDeleteConfirmation = (productId, productName) => {
     setDeletingProduct({ id: productId, name: productName });
     handlers.open();
@@ -298,31 +290,9 @@ function Product({
     }
     setUploading(false);
   };
+
   return (
     <Container fluid mx="xs" sx={{ maxHeight: '100%' }}>
-      <DeleteConfirmationDialog
-        isOpen={confirmationOpened}
-        close={handlers.close}
-        confirmationText="Барааг идэвхигүй болгох уу?"
-        thingToDelete={deletingProduct}
-        onConfirm={deleteProduct}
-        loading={deleting}
-      />
-      {/* <ProductModal
-        initialData={editingProdData}
-        isOpen={opened}
-        close={close}
-        loading={updating}
-        userToken={userToken}
-        onSubmit={editingProdData?.create ? createProduct : updateProduct}
-        categories={{ mainCategories, parentCategories, childCategories }}
-      /> */}
-      <ExcelUploader
-        isOpen={excelUploaderOpened}
-        close={closeExcelUploader}
-        loading={uploading}
-        onSubmit={uploadFormData}
-      />
       <Grid position="apart" grow>
         <Grid.Col span={2}>
           <Text size="lg" weight={500}>
@@ -341,7 +311,7 @@ function Product({
             }}
           />
         </Grid.Col>
-        <Grid.Col span={2}>
+        {/* <Grid.Col span={2}>
           <Group position="center">
             <Button
               variant="filled"
@@ -365,9 +335,8 @@ function Product({
               </ActionIcon>
             </Tooltip>
           </Group>
-        </Grid.Col>
+        </Grid.Col> */}
       </Grid>
-
       <DataTable
         height="75vh"
         minHeight="75vh"
@@ -389,39 +358,35 @@ function Product({
         totalRecords={total}
         recordsPerPage={PAGE_SIZE}
         noRecordsText="Бараа олдсонгүй"
-        rowExpansion={
-          {
-            // content: ({ record }) => (
-            //   <ProductDetails
-            //     initialData={record}
-            //     categories={{ mainCategories, parentCategories, childCategories }}
-            //   />
-            // ),
-          }
-        }
+        rowExpansion={{
+          content: ({ record }) => (
+            <ProductDetails
+              initialData={record}
+              // categories={{ mainCategories, parentCategories, childCategories }}
+            />
+          ),
+        }}
         columns={[
           {
             accessor: 'additionalImage',
             title: 'Зураг',
             width: 100,
-            render: ({ additionalImage }) => (
-              // product_image?.images?.[0] ? (
-              //   <Center>
-              //     <Image
-              //       src={`${product_image?.images?.[0]}`}
-              //       alt="Зураг"
-              //       style={{ objectFit: 'contain' }}
-              //       height={60}
-              //       width={60}
-              //     />
-              //   </Center>
-              // ) : (
-              //   <Center>
-              //     <IconPhotoOff color="gray" />
-              //   </Center>
-              // ),
-              <div></div>
-            ),
+            render: ({ additionalImage }) =>
+              additionalImage?.[0] ? (
+                <Center>
+                  <Image
+                    // src={`${additionalImage?.[0]?.url}`}
+                    alt="Зураг"
+                    style={{ objectFit: 'contain' }}
+                    height={60}
+                    width={60}
+                  />
+                </Center>
+              ) : (
+                <Center>
+                  <IconPhotoOff color="gray" />
+                </Center>
+              ),
           },
           {
             accessor: 'name',
@@ -494,7 +459,7 @@ function Product({
                 <ActionIcon
                   color="blue"
                   onClick={(e) => {
-                    e.preventDefault();
+                    e.stopPropagation();
                     openProductEditingModal(record);
                   }}
                 >
@@ -513,6 +478,29 @@ function Product({
             ),
           },
         ]}
+      />
+      <DeleteConfirmationDialog
+        isOpen={confirmationOpened}
+        close={handlers.close}
+        confirmationText="Барааг идэвхигүй болгох уу?"
+        thingToDelete={deletingProduct}
+        onConfirm={deleteProduct}
+        loading={deleting}
+      />
+      <ProductModal
+        initialData={editingProdData}
+        isOpen={opened}
+        close={close}
+        loading={updating}
+        userToken={userToken}
+        onSubmit={editingProdData?.create ? createProduct : updateProduct}
+        // categories={{ mainCategories, parentCategories, childCategories }}
+      />
+      <ExcelUploader
+        isOpen={excelUploaderOpened}
+        close={closeExcelUploader}
+        loading={uploading}
+        onSubmit={uploadFormData}
       />
     </Container>
   );
@@ -551,7 +539,7 @@ export const getServerSideProps = requireAuthentication(async ({ req, res }) => 
       // mainCategories: mainCats.data.data,
       // parentCategories: parentCats.data.data,
       // childCategories: childCats.data.data,
-      total: response.data.result?.length,
+      total: response.data.pagination?.total,
       userToken: req.cookies.urga_admin_user_jwt,
     },
   };

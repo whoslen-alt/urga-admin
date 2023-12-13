@@ -30,7 +30,7 @@ function User({ users, total: totalUsers, userToken }) {
     setLoading(true);
     const from = (pageNumber - 1) * PAGE_SIZE;
     const res = await axios(
-      `${process.env.NEXT_PUBLIC_API}/admin/employees?offset=${from}&limit=${PAGE_SIZE}`,
+      `${process.env.NEXT_PUBLIC_API}/admin/employee?offset=${from}&limit=${PAGE_SIZE}`,
       {
         headers: {
           Authorization: `Bearer ${userToken}`,
@@ -46,7 +46,7 @@ function User({ users, total: totalUsers, userToken }) {
     const title = 'Админ хэрэглэгч үүсгэлт';
     try {
       const res = await axios.post(
-        `${process.env.NEXT_PUBLIC_API}/admin/register`,
+        `${process.env.NEXT_PUBLIC_API}/admin/employee`,
         {
           username: values.username,
           email: values.email,
@@ -93,7 +93,7 @@ function User({ users, total: totalUsers, userToken }) {
     const title = 'Админ хэрэглэгчийн мэдээлэл шинэчлэлт';
     try {
       const res = await axios.put(
-        `${process.env.NEXT_PUBLIC_API}/admin/profile`,
+        `${process.env.NEXT_PUBLIC_API}/admin/employee`,
         {
           userid: values.userid,
           username: values.username,
@@ -136,7 +136,7 @@ function User({ users, total: totalUsers, userToken }) {
     const title = 'Админ хэрэглэгч идэвхигүй болголт';
     try {
       const res = await axios.put(
-        `${process.env.NEXT_PUBLIC_API}/admin/profile`,
+        `${process.env.NEXT_PUBLIC_API}/admin/employee/test`,
         {
           userid: id,
           active: false,
@@ -345,7 +345,7 @@ export const getServerSideProps = requireAuthentication(async ({ req, res }) => 
   const from = 0;
   const to = PAGE_SIZE;
   const response = await axios.get(
-    `${process.env.NEXT_PUBLIC_API}/admin/employees?offset=${from}&limit=${to}`,
+    `${process.env.NEXT_PUBLIC_API}/admin/employee?offset=${from}&limit=${to}`,
     {
       headers: {
         Authorization: `Bearer ${req.cookies.urga_admin_user_jwt}`,

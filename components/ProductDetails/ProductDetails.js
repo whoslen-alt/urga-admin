@@ -18,7 +18,7 @@ import { IconArrowBack, IconCheck } from '@tabler/icons';
 function ProductDetails({ initialData, categories }) {
   return (
     <Group px={12} py="xs" spacing="lg" align="flex-start">
-      <Stack p="xs" spacing="sm">
+      {/* <Stack p="xs" spacing="sm">
         <Group spacing={6}>
           <Text weight={500}>Ерөнхий ангилал:</Text>
           {(initialData?.main_cat_id === null || initialData?.main_cat_id.length === 0) && (
@@ -58,7 +58,7 @@ function ProductDetails({ initialData, categories }) {
               );
             })}
         </Group>
-      </Stack>
+      </Stack> */}
       <Stack p="xs" spacing="sm" align="flex-start">
         <Group spacing={6}>
           <Text weight={500}>Савлагаа:</Text>

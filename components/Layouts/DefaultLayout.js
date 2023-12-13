@@ -30,11 +30,9 @@ export default function DefaultLayout({ children }) {
       //     Application footer
       //   </Footer>
       // }
-
       navbar={<NavigationBar isOpen={opened} />}
     >
       {children}
-      {/* <Text>Resize app to see responsive navbar in action</Text> */}
     </AppShell>
   );
 }

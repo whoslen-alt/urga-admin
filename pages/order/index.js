@@ -79,6 +79,7 @@ function Order({ userToken }) {
   useEffect(() => {
     setPage(1);
   }, [handleSearch]);
+
   async function handleSearch() {
     try {
       setLoading(true);
@@ -88,7 +89,7 @@ function Order({ userToken }) {
           dateFormat
         )}&untilDate=${dayjs(dates?.[1]).format(
           dateFormat
-        )}&offset=${from}&limit=${PAGE_SIZE}&orderid=${debounced}`,
+        )}&offset=${from}&limit=${PAGE_SIZE}&orderid=${debounced.trim()}`,
         {
           headers: {
             Authorization: `Bearer ${userToken}`,
@@ -149,6 +150,8 @@ function Order({ userToken }) {
     setUpdating(false);
   };
 
+  const handleDateSelect = () => {};
+
   const fetchPage = async (pageNumber) => {
     try {
       setLoading(true);
@@ -158,7 +161,7 @@ function Order({ userToken }) {
           dateFormat
         )}&untilDate=${dayjs(dates?.[1]).format(
           dateFormat
-        )}&offset=${from}&limit=${PAGE_SIZE}&orderid=${debounced}&status=${
+        )}&offset=${from}&limit=${PAGE_SIZE}&orderid=${debounced.trim()}&status=${
           orderFilterValue === 'all' ? '' : orderFilterValue
         }`,
         {
@@ -181,7 +184,7 @@ function Order({ userToken }) {
             Захиалгууд
           </Text>
         </Grid.Col>
-        <Grid.Col span={2} sm={4} xs={24}>
+        <Grid.Col sm={4} xs={24}>
           <DatesProvider settings={{ locale: 'mn', firstDayOfWeek: 0, weekendDays: [0] }}>
             <DatePickerInput
               allowSingleDateInRange
@@ -208,7 +211,8 @@ function Order({ userToken }) {
         </Grid.Col>
         <Grid.Col span={6} sm={6} xs={24}>
           <TextInput
-            placeholder="Захиалга хайх... (Захиалгын дугаар, Захиалагч, Холбогдох утас)"
+            placeholder="Захиалгын дугаараар хайх"
+            // , Захиалагч, Холбогдох утас
             rightSection={<IconSearch size="1rem" />}
             radius="xl"
             styles={{ root: { flexGrow: 2 } }}
