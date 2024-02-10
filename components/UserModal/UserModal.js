@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import {
   Modal,
   Box,
@@ -13,18 +14,16 @@ import {
   LoadingOverlay,
   Select,
 } from '@mantine/core';
-
 import { isNotEmpty, useForm } from '@mantine/form';
-import { useDisclosure } from '@mantine/hooks';
-import { IconArrowBack, IconCheck } from '@tabler/icons';
-import { useEffect } from 'react';
-function UserModal({ initialData, isOpen, close, onSubmit, loading }) {
+
+function UserModal({ initialData, isOpen, close, onSubmit, loading, roles }) {
   const form = useForm({
     initialValues: {
       username: initialData?.username,
       email: initialData?.email,
       password: initialData?.password,
       active: initialData?.active,
+      roleid: initialData?.emp_role?.id,
     },
     validate: {
       username: isNotEmpty('Нэр оруулна уу'),
@@ -32,12 +31,14 @@ function UserModal({ initialData, isOpen, close, onSubmit, loading }) {
       password: initialData?.create ? isNotEmpty('Нууц үг оруулна уу') : null,
     },
   });
+
   useEffect(() => {
     form.setValues(initialData);
     return () => {
       form.reset();
     };
   }, [initialData]);
+
   return (
     <Modal
       opened={isOpen}
@@ -74,6 +75,15 @@ function UserModal({ initialData, isOpen, close, onSubmit, loading }) {
               size="xs"
             />
           </Grid.Col> */}
+          <Grid.Col span={12} xs={12}>
+            <Select
+              searchable
+              label="Эрх"
+              data={roles?.map((role) => ({ label: role?.name, value: role.id }))}
+              {...form.getInputProps('roleid')}
+              size="xs"
+            />
+          </Grid.Col>
           {initialData?.create && (
             <Grid.Col span={12} xs={12}>
               <TextInput label="Нууц үг" {...form.getInputProps('password')} size="xs" />

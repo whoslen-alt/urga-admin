@@ -11,34 +11,47 @@ import {
   Image,
 } from '@mantine/core';
 import { useMemo, useState } from 'react';
-import { isNotEmpty, useForm } from '@mantine/form';
+import { useForm } from '@mantine/form';
 import { IconX } from '@tabler/icons';
 
 import { Dropzone, MIME_TYPES } from '@mantine/dropzone';
 
-export function CategoryModal({
-  opened,
-  close,
-  type,
-  creating,
-  onSubmit,
-  categories,
-  isFileUploading,
-  handleImageDrop,
-}) {
+export function CategoryModal({ opened, close, type, loading, onSubmit }) {
   const form = useForm({
     initialValues: {
-      name: '',
-      main_cat_id: '',
-      parent_cat_id: '',
-      icon: null,
+      img: null,
     },
-    validate: {
-      name: (value) => (value.length > 0 ? null : 'Нэр оруулна уу'),
-      main_cat_id: type === 'parent' || type === 'child' ? isNotEmpty('Ангилал сонгоно уу') : null,
-      parent_cat_id: type === 'child' ? isNotEmpty('Ангилал сонгоно уу') : null,
-    },
+    validate: {},
   });
+  const [files, setFiles] = useState([]);
+
+  const previews = files.map((file, index) => {
+    const imageUrl = URL.createObjectURL(file);
+    return (
+      <Stack spacing={0} pos="relative" key={index}>
+        <Image
+          src={imageUrl}
+          withPlaceholder
+          imageProps={{ onLoad: () => URL.revokeObjectURL(imageUrl) }}
+        />
+        <ActionIcon
+          variant="filled"
+          radius="xl"
+          color="red"
+          size="xs"
+          pos="absolute"
+          top={-10}
+          right={-10}
+          onClick={() => {
+            setFiles([]);
+          }}
+        >
+          <IconX size="0.8rem" />
+        </ActionIcon>
+      </Stack>
+    );
+  });
+
   const categoryTypes = useMemo(
     () => ({
       main: 'Ерөнхий',
@@ -49,9 +62,12 @@ export function CategoryModal({
   );
 
   const handleSubmit = async (fields) => {
-    await onSubmit(fields, type);
+    await onSubmit(fields);
     form.reset();
+    setFiles([]);
+    close();
   };
+
   const handleClose = () => {
     form.reset();
     close();
@@ -61,19 +77,19 @@ export function CategoryModal({
     <Modal
       opened={opened}
       onClose={handleClose}
-      title={<Text>{categoryTypes[type]} ангилал үүсгэх</Text>}
+      title={<Text>{categoryTypes[type]} ангиллын зураг</Text>}
     >
       <form onSubmit={form.onSubmit((values) => handleSubmit(values))}>
         <Stack>
-          <TextInput
+          {/* <TextInput
             mt="sm"
             label="Ангиллын нэр"
             placeholder="Ангиллын нэр"
             size="xs"
             min={0}
             {...form.getInputProps('name')}
-          />
-          {(type === 'parent' || type === 'child') && (
+          /> */}
+          {/* {(type === 'parent' || type === 'child') && (
             <Select
               label="Ерөнхий ангилал"
               placeholder="Нэгийг сонгоно уу"
@@ -85,47 +101,34 @@ export function CategoryModal({
               size="xs"
               {...form.getInputProps('main_cat_id')}
             />
-          )}
-          {type === 'parent' && (
-            <div>
-              <Text size="xs" weight="bold">
-                Icon зураг оруулах
+          )} */}
+
+          <>
+            <Text size="xs" weight="bold">
+              Icon зураг оруулах
+            </Text>
+            <Dropzone
+              mt="xs"
+              maxFiles={1}
+              accept={[MIME_TYPES.png, MIME_TYPES.jpeg, MIME_TYPES.svg]}
+              // onDrop={(acceptedFiles) => {
+              //   handleImageDrop(acceptedFiles, (imgUrl) => form.setFieldValue('icon', imgUrl));
+              // }}
+              onDrop={(files) => {
+                setFiles(files);
+                form.setFieldValue('img', files?.[0]);
+              }}
+            >
+              <Text align="center" size="sm">
+                Та файлаа энд хуулна уу
               </Text>
-              <Dropzone
-                mt="xs"
-                maxFiles={1}
-                accept={[MIME_TYPES.png, MIME_TYPES.jpeg, MIME_TYPES.svg]}
-                onDrop={(acceptedFiles) => {
-                  handleImageDrop(acceptedFiles, (imgUrl) => form.setFieldValue('icon', imgUrl));
-                }}
-                loading={isFileUploading}
-              >
-                <Text align="center" size="sm">
-                  Та файлаа энд хуулна уу
-                </Text>
-              </Dropzone>
-              <SimpleGrid cols={4} breakpoints={[{ maxWidth: 'sm', cols: 1 }]} mt="xl">
-                {form.getInputProps('icon').value && (
-                  <Stack spacing={0} pos="relative">
-                    <Image src={form.getInputProps('icon').value} withPlaceholder />
-                    <ActionIcon
-                      variant="filled"
-                      radius="xl"
-                      color="red"
-                      size="xs"
-                      pos="absolute"
-                      top={-10}
-                      right={-10}
-                      onClick={() => form.setFieldValue('icon', null)}
-                    >
-                      <IconX size="0.8rem" />
-                    </ActionIcon>
-                  </Stack>
-                )}
-              </SimpleGrid>
-            </div>
-          )}
-          {type === 'child' && (
+            </Dropzone>
+            <SimpleGrid cols={4} breakpoints={[{ maxWidth: 'sm', cols: 1 }]} mt="xl">
+              {previews}
+            </SimpleGrid>
+          </>
+
+          {/* {type === 'child' && (
             <Select
               label="Дэд ангилал"
               placeholder="Нэгийг сонгоно уу"
@@ -137,14 +140,14 @@ export function CategoryModal({
               size="xs"
               {...form.getInputProps('parent_cat_id')}
             />
-          )}
+          )} */}
         </Stack>
         <Group position="right" mt="xl">
           <Button variant="subtle" radius="xl" onClick={handleClose}>
             Цуцлах
           </Button>
-          <Button type="submit" radius="xl" loading={creating}>
-            Үүсгэх
+          <Button type="submit" radius="xl" loading={loading}>
+            Зураг оруулах
           </Button>
         </Group>
       </form>

@@ -4,12 +4,13 @@ import { getCookie, setCookie } from 'cookies-next';
 import Head from 'next/head';
 import { MantineProvider, ColorSchemeProvider } from '@mantine/core';
 import { ModalsProvider } from '@mantine/modals';
-
+import { HydrationBoundary, QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Notifications } from '@mantine/notifications';
 import DefaultLayout from '../components/Layouts/DefaultLayout';
 
-export default function App(props) {
-  const { Component, pageProps } = props;
+export default function App({ Component, pageProps, ...props }) {
+  const [queryClient] = useState(() => new QueryClient());
+
   const [colorScheme, setColorScheme] = useState(props.colorScheme);
 
   const toggleColorScheme = (value) => {
@@ -26,20 +27,24 @@ export default function App(props) {
         <link rel="shortcut icon" href="/logo.png" />
       </Head>
 
-      <ColorSchemeProvider colorScheme={colorScheme} toggleColorScheme={toggleColorScheme}>
-        <MantineProvider
-          theme={{ colorScheme, focusRing: 'always' }}
-          withGlobalStyles
-          withNormalizeCSS
-        >
-          <ModalsProvider>
-            <Notifications />
-            <DefaultLayout>
-              <Component {...pageProps} />
-            </DefaultLayout>
-          </ModalsProvider>
-        </MantineProvider>
-      </ColorSchemeProvider>
+      <QueryClientProvider client={queryClient}>
+        <HydrationBoundary state={pageProps.dehydratedState}>
+          <ColorSchemeProvider colorScheme={colorScheme} toggleColorScheme={toggleColorScheme}>
+            <MantineProvider
+              theme={{ colorScheme, focusRing: 'always' }}
+              withGlobalStyles
+              withNormalizeCSS
+            >
+              <ModalsProvider>
+                <Notifications />
+                <DefaultLayout>
+                  <Component {...pageProps} />
+                </DefaultLayout>
+              </ModalsProvider>
+            </MantineProvider>
+          </ColorSchemeProvider>
+        </HydrationBoundary>
+      </QueryClientProvider>
     </>
   );
 }

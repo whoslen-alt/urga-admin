@@ -1,21 +1,6 @@
-import {
-  Badge,
-  Box,
-  Button,
-  Chip,
-  Divider,
-  Flex,
-  Grid,
-  Group,
-  MultiSelect,
-  Stack,
-  Text,
-  Textarea,
-  TextInput,
-} from '@mantine/core';
-import { IconArrowBack, IconCheck } from '@tabler/icons';
+import { Group, Stack, Text } from '@mantine/core';
 
-function ProductDetails({ initialData, categories }) {
+function ProductDetails({ initialData }) {
   return (
     <Group px={12} py="xs" spacing="lg" align="flex-start">
       {/* <Stack p="xs" spacing="sm">

@@ -22,13 +22,13 @@ function OrderProductDetail({ products }) {
                 mih={rem(160)}
               >
                 <Card.Section inheritPadding withBorder pt="md" pb="xs">
-                  <Text fw={500}>{e.product.name}</Text>
+                  <Text fw={500}>{e?.product?.name}</Text>
                 </Card.Section>
                 <Stack spacing="sm">
                   <Group position="apart" mt="xs" noWrap>
                     <Text>Тоо ширхэг:</Text>
                     {/* <Text>{e.qty + e.product.unit}</Text> */}
-                    <Text>{e.qty}</Text>
+                    <Text>{e?.qty}</Text>
                   </Group>
                   <Group position="apart" noWrap>
                     <Text>Нэгж үнэ:</Text>
@@ -37,7 +37,7 @@ function OrderProductDetail({ products }) {
                         style: 'currency',
                         currency: 'MNT',
                         currencyDisplay: 'narrowSymbol',
-                      }).format(e.price)}
+                      }).format(e?.price)}
                     </Text>
                   </Group>
                   <Group position="apart" noWrap>
@@ -47,7 +47,7 @@ function OrderProductDetail({ products }) {
                         style: 'currency',
                         currency: 'MNT',
                         currencyDisplay: 'narrowSymbol',
-                      }).format(e.price * e.qty)}
+                      }).format(e?.price * e?.qty)}
                     </Text>
                   </Group>
                 </Stack>

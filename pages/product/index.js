@@ -18,7 +18,7 @@ import {
   Tooltip,
 } from '@mantine/core';
 import { DataTable } from 'mantine-datatable';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import {
   IconBox,
   IconCheck,
@@ -43,23 +43,19 @@ import { DeleteConfirmationDialog } from '../../components/DeleteConfirmationDia
 import { showNotification } from '@mantine/notifications';
 import requireAuthentication from '../../lib/requireAuthentication';
 import ExcelUploader from '../../components/ExcelUploader/ExcelUploader';
+import { useProducts } from '../../hooks/useProducts';
 
 const PAGE_SIZE = 15;
 
-function Product({
-  products,
-  total: totalProducts,
-  // mainCategories,
-  // parentCategories,
-  // childCategories,
-  userToken,
-}) {
+function Product({ userToken }) {
+  const config = {
+    headers: {
+      Authorization: `Bearer ${userToken}`,
+    },
+  };
   const [selectedRecords, setSelectedRecords] = useState([]);
   const [page, setPage] = useState(1);
-  const [total, setTotal] = useState(totalProducts);
-  const [records, setRecords] = useState(products);
   const [query, setQuery] = useState('');
-  const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [updating, setUpdating] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -67,56 +63,18 @@ function Product({
   const [opened, { open, close }] = useDisclosure(false);
   const [excelUploaderOpened, { open: openExcelUploader, close: closeExcelUploader }] =
     useDisclosure(false);
+  const [debounced] = useDebouncedValue(query, 500);
+  const { data, isLoading, refetch } = useProducts(
+    {
+      limit: PAGE_SIZE,
+      offset: page - 1,
+      query: debounced,
+    },
+    userToken
+  );
+
   const [confirmationOpened, handlers] = useDisclosure(false);
   const [editingProdData, setEditingProdData] = useState(null);
-  const [debounced] = useDebouncedValue(query, 500);
-
-  useEffect(() => {
-    handleSearch();
-  }, [debounced]);
-
-  useEffect(() => {
-    setPage(1);
-  }, [handleSearch]);
-
-  const config = {
-    headers: {
-      Authorization: `Bearer ${userToken}`,
-    },
-  };
-
-  async function handleSearch() {
-    setLoading(true);
-    const from = (page - 1) * PAGE_SIZE;
-    const res = await axios(
-      `${process.env.NEXT_PUBLIC_API}/product?offset=${from}&limit=${PAGE_SIZE}&query=${debounced}`,
-      {
-        headers: {
-          Authorization: `Bearer ${userToken}`,
-        },
-      }
-    );
-    setRecords(res.data.result);
-    setTotal(res.data.pagination?.total);
-    setLoading(false);
-  }
-
-  const fetchPage = async (pageNumber) => {
-    setLoading(true);
-    const from = (pageNumber - 1) * PAGE_SIZE;
-    const res = await axios(
-      `${process.env.NEXT_PUBLIC_API}/product?offset=${from}&limit=${PAGE_SIZE}&query=${debounced}`,
-      {
-        headers: {
-          Authorization: `Bearer ${userToken}`,
-        },
-      }
-    );
-    setPage(1);
-    setRecords(res.data.result);
-    setTotal(res.data.pagination?.total);
-    setLoading(false);
-  };
 
   const openProductEditingModal = (productData, type = 'edit') => {
     if (type === 'creation') {
@@ -143,7 +101,7 @@ function Product({
           color: 'green',
           icon: <IconCheck />,
         });
-        await fetchPage(1);
+        await refetch();
       } else {
         showNotification({
           title: 'Бараа устгалт',
@@ -185,7 +143,6 @@ function Product({
           wholesale_qty: values.wholesale_qty,
           images: values.images,
         },
-
         config
       );
       if (res.status === 200) {
@@ -195,7 +152,7 @@ function Product({
           color: 'green',
           icon: <IconCheck />,
         });
-        await fetchPage(1);
+        await refetch();
       } else {
         showNotification({
           title,
@@ -226,6 +183,7 @@ function Product({
           instruction: values.instruction,
           detailed_description: values.detailed_description,
           deletedImages: values.deletedImages,
+          active: values.active,
         },
         config
       );
@@ -236,7 +194,7 @@ function Product({
           color: 'green',
           icon: <IconCheck />,
         });
-        await fetchPage(1);
+        await refetch();
       } else {
         showNotification({
           title,
@@ -310,6 +268,7 @@ function Product({
             onChange={(e) => {
               e.preventDefault();
               setQuery(e.currentTarget.value);
+              setPage(1);
             }}
           />
         </Grid.Col>
@@ -348,26 +307,19 @@ function Product({
         withBorder
         withColumnBorders
         highlightOnHover
-        records={records}
         selectedRecords={selectedRecords}
         onSelectedRecordsChange={setSelectedRecords}
-        fetching={loading}
+        records={data?.result}
+        fetching={isLoading}
         page={page}
-        onPageChange={(pageNum) => {
-          setPage(pageNum);
-          fetchPage(pageNum);
-        }}
-        totalRecords={total}
+        onPageChange={setPage}
+        totalRecords={data?.pagination?.total}
         recordsPerPage={PAGE_SIZE}
         noRecordsText="Бараа олдсонгүй"
         rowExpansion={{
-          content: ({ record }) => (
-            <ProductDetails
-              initialData={record}
-              // categories={{ mainCategories, parentCategories, childCategories }}
-            />
-          ),
+          content: ({ record }) => <ProductDetails initialData={record} />,
         }}
+        pinLastColumn
         columns={[
           {
             accessor: 'additionalImage',
@@ -401,11 +353,6 @@ function Product({
             title: 'Үлдэгдэл',
             textAlignment: 'center',
             width: 85,
-            // render: (r) => (
-            //   <Text>
-            //     {r.instock ? r.instock : 0} {r.unit}
-            //   </Text>
-            // ),
           },
           {
             accessor: 'listPrice',
@@ -414,9 +361,7 @@ function Product({
             width: 95,
             render: ({ listPrice }) => <Text>{Intl.NumberFormat().format(listPrice)}</Text>,
           },
-
           { accessor: 'note', title: 'Тэмдэглэл' },
-
           {
             accessor: 'description',
             title: 'Тайлбар',
@@ -427,35 +372,35 @@ function Product({
             title: 'Дэлгэрэнгүй тайлбар',
             render: ({ detailed_description }) => <Text lineClamp={5}>{detailed_description}</Text>,
           },
-          // {
-          //   accessor: 'active',
-          //   title: 'Идэвхитэй эсэх',
-          //   width: 130,
-          //   textAlignment: 'center',
-          //   render: (record) => (
-          //     <Badge
-          //       color={record.active ? 'green' : 'red'}
-          //       size="sm"
-          //       variant="filled"
-          //       styles={{
-          //         inner: {
-          //           textTransform: 'capitalize',
-          //           fontWeight: 500,
-          //         },
-          //         root: {
-          //           padding: '8px 8px 9px 8px',
-          //         },
-          //       }}
-          //     >
-          //       {record.active ? 'Идэвхитэй' : 'Идэвхигүй'}
-          //     </Badge>
-          //   ),
-          // },
+          {
+            accessor: 'active',
+            title: 'Идэвхитэй эсэх',
+            width: 130,
+            textAlignment: 'center',
+            render: (record) => (
+              <Badge
+                color={record.active ? 'green' : 'red'}
+                size="sm"
+                variant="filled"
+                styles={{
+                  inner: {
+                    textTransform: 'capitalize',
+                    fontWeight: 500,
+                  },
+                  root: {
+                    padding: '8px 8px 9px 8px',
+                  },
+                }}
+              >
+                {record.active ? 'Идэвхитэй' : 'Идэвхигүй'}
+              </Badge>
+            ),
+          },
           {
             accessor: 'actions',
             title: <Text>Үйлдэл</Text>,
             textAlignment: 'center',
-            width: 80,
+            width: '0%',
             render: (record) => (
               <Group spacing={4} noWrap>
                 <ActionIcon
@@ -467,7 +412,7 @@ function Product({
                 >
                   <IconEdit size={16} />
                 </ActionIcon>
-                <ActionIcon
+                {/* <ActionIcon
                   color="red"
                   onClick={(e) => {
                     e.stopPropagation();
@@ -475,7 +420,7 @@ function Product({
                   }}
                 >
                   <IconTrash size={16} />
-                </ActionIcon>
+                </ActionIcon> */}
               </Group>
             ),
           },
@@ -507,41 +452,9 @@ function Product({
     </Container>
   );
 }
-export const getServerSideProps = requireAuthentication(async ({ req, res }) => {
-  const from = 0;
-  const to = PAGE_SIZE;
-  const response = await axios.get(
-    `${process.env.NEXT_PUBLIC_API}/product?offset=${from}&limit=${to}`,
-    {
-      headers: {
-        Authorization: `Bearer ${req.cookies.urga_admin_user_jwt}`,
-      },
-    }
-  );
-
-  // const mainCats = await axios.get(`${process.env.NEXT_PUBLIC_API}/admin/category/main`, {
-  //   headers: {
-  //     Authorization: `Bearer ${req.cookies.urga_admin_user_jwt}`,
-  //   },
-  // });
-  // const parentCats = await axios.get(`${process.env.NEXT_PUBLIC_API}/admin/category/parent`, {
-  //   headers: {
-  //     Authorization: `Bearer ${req.cookies.urga_admin_user_jwt}`,
-  //   },
-  // });
-  // const childCats = await axios.get(`${process.env.NEXT_PUBLIC_API}/admin/category/child`, {
-  //   headers: {
-  //     Authorization: `Bearer ${req.cookies.urga_admin_user_jwt}`,
-  //   },
-  // });
-
+export const getServerSideProps = requireAuthentication(async ({ req }) => {
   return {
     props: {
-      products: response.data.result,
-      // mainCategories: mainCats.data.data,
-      // parentCategories: parentCats.data.data,
-      // childCategories: childCats.data.data,
-      total: response.data.pagination?.total,
       userToken: req.cookies.urga_admin_user_jwt,
     },
   };

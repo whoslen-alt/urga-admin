@@ -46,7 +46,7 @@ function ProductModal({ initialData, isOpen, close, onSubmit, loading, userToken
       wholePrice: initialData?.wholePrice,
       wholeQty: initialData?.wholeQty,
       additionalImage: [],
-      // active: initialData?.active,
+      active: initialData?.active,
       deletedImages: [],
     },
     validate: {
@@ -124,7 +124,7 @@ function ProductModal({ initialData, isOpen, close, onSubmit, loading, userToken
             <Grid.Col span={9} xs={9}>
               <TextInput label="Барааны нэр" {...form.getInputProps('name')} size="xs" />
             </Grid.Col>
-            {/* <Grid.Col span={3} xs={3}>
+            <Grid.Col span={3} xs={3}>
               <Select
                 label="Идэвхитэй эсэх"
                 data={[
@@ -134,7 +134,7 @@ function ProductModal({ initialData, isOpen, close, onSubmit, loading, userToken
                 {...form.getInputProps('active')}
                 size="xs"
               />
-            </Grid.Col> */}
+            </Grid.Col>
             {/* <Grid.Col span={4} xs={4}>
               <MultiSelect
                 data={
@@ -171,7 +171,7 @@ function ProductModal({ initialData, isOpen, close, onSubmit, loading, userToken
                 {...form.getInputProps('child_cat_id')}
               />
             </Grid.Col> */}
-            <Grid.Col span={3} xs={3}>
+            {/* <Grid.Col span={3} xs={3}>
               <TextInput
                 label="Үлдэгдэл"
                 {...form.getInputProps('balance')}
@@ -195,14 +195,14 @@ function ProductModal({ initialData, isOpen, close, onSubmit, loading, userToken
                 rightSection={<Text size="xs">₮</Text>}
               />
             </Grid.Col>
-            {/* <Grid.Col span={3} xs={3}>
+            <Grid.Col span={3} xs={3}>
               <TextInput
                 label="Хямдралтай үнэ"
                 {...form.getInputProps('promo_price')}
                 size="xs"
                 rightSection={<Text size="xs">₮</Text>}
               />
-            </Grid.Col> */}
+            </Grid.Col>
             <Grid.Col span={3} xs={3}>
               <TextInput
                 label="Бөөний тоо ширхэг"
@@ -218,7 +218,7 @@ function ProductModal({ initialData, isOpen, close, onSubmit, loading, userToken
                 size="xs"
                 rightSection={<Text size="xs">₮</Text>}
               />
-            </Grid.Col>
+            </Grid.Col> */}
             <Grid.Col span={12}>
               <Textarea
                 label="Тэмдэглэл"

@@ -38,15 +38,13 @@ import OrderProductsDetail from '../../components/OrderProductsDetail/OrderProdu
 import { orderStatus } from '../../lib/constants/order_status';
 import { isNotEmpty, useForm } from '@mantine/form';
 import requireAuthentication from '../../lib/requireAuthentication';
+import { useOrders } from '../../hooks/useOrders';
 
 const PAGE_SIZE = 15;
 const dateFormat = 'YYYY-MM-DD';
 
 function Order({ userToken }) {
   const [page, setPage] = useState(1);
-  const [total, setTotal] = useState(0);
-  const [records, setRecords] = useState([]);
-  const [loading, setLoading] = useState(false);
   const [updating, setUpdating] = useState(false);
   const [query, setQuery] = useState('');
   const [debounced] = useDebouncedValue(query, 500);
@@ -55,6 +53,19 @@ function Order({ userToken }) {
   const [orderFilterValue, setOrderFilterValue] = useState('all');
   const [expandedRecordIds, setExpandedRecordIds] = useState([]);
   const orderStatuses = useMemo(() => orderStatus, []);
+
+  const { data, isLoading, refetch } = useOrders(
+    {
+      status: orderFilterValue === 'all' ? '' : orderFilterValue,
+      orderId: debounced.trim(),
+      fromDate: dayjs(dates?.[0]).format(dateFormat),
+      untilDate: dayjs(dates?.[1]).format(dateFormat),
+      limit: PAGE_SIZE,
+      offset: page - 1,
+    },
+    userToken
+  );
+
   const form = useForm({
     initialValues: {
       orderStatus: '',
@@ -64,43 +75,6 @@ function Order({ userToken }) {
     },
   });
 
-  useEffect(() => {
-    fetchPage(page);
-  }, [dates]);
-
-  useEffect(() => {
-    fetchPage(1);
-  }, [orderFilterValue]);
-
-  useEffect(() => {
-    handleSearch();
-  }, [debounced]);
-
-  useEffect(() => {
-    setPage(1);
-  }, [handleSearch]);
-
-  async function handleSearch() {
-    try {
-      setLoading(true);
-      const from = (page - 1) * PAGE_SIZE;
-      const res = await axios.get(
-        `${process.env.NEXT_PUBLIC_API}/admin/order?fromDate=${dayjs(dates?.[0]).format(
-          dateFormat
-        )}&untilDate=${dayjs(dates?.[1]).format(
-          dateFormat
-        )}&offset=${from}&limit=${PAGE_SIZE}&orderid=${debounced.trim()}`,
-        {
-          headers: {
-            Authorization: `Bearer ${userToken}`,
-          },
-        }
-      );
-      setRecords(res.data.data);
-      setTotal(res.data.pagination.total);
-      setLoading(false);
-    } catch (e) {}
-  }
   const updateOrderStatus = async (orderId, initialStatus, orderStatus) => {
     const title = 'Захиалгын төлөв шинэчлэлт';
     const currentPopovers = [...popovers];
@@ -131,7 +105,7 @@ function Order({ userToken }) {
           icon: <IconCheck />,
         });
 
-        await fetchPage(page);
+        await refetch();
         setPopovers(currentPopovers);
       } else {
         showNotification({
@@ -148,32 +122,6 @@ function Order({ userToken }) {
       });
     }
     setUpdating(false);
-  };
-
-  const handleDateSelect = () => {};
-
-  const fetchPage = async (pageNumber) => {
-    try {
-      setLoading(true);
-      const from = (pageNumber - 1) * PAGE_SIZE;
-      const res = await axios.get(
-        `${process.env.NEXT_PUBLIC_API}/admin/order?fromDate=${dayjs(dates?.[0]).format(
-          dateFormat
-        )}&untilDate=${dayjs(dates?.[1]).format(
-          dateFormat
-        )}&offset=${from}&limit=${PAGE_SIZE}&orderid=${debounced.trim()}&status=${
-          orderFilterValue === 'all' ? '' : orderFilterValue
-        }`,
-        {
-          headers: {
-            Authorization: `Bearer ${userToken}`,
-          },
-        }
-      );
-      setRecords(res.data.data);
-      setTotal(res.data.pagination?.total);
-      setLoading(false);
-    } catch (e) {}
   };
 
   return (
@@ -204,7 +152,10 @@ function Order({ userToken }) {
               radius="xl"
               valueFormat="YYYY-MM-DD"
               value={dates}
-              onChange={setDates}
+              onChange={(value) => {
+                setDates(value);
+                setPage(1);
+              }}
               labelSeparator="→"
             />
           </DatesProvider>
@@ -216,7 +167,10 @@ function Order({ userToken }) {
             rightSection={<IconSearch size="1rem" />}
             radius="xl"
             styles={{ root: { flexGrow: 2 } }}
-            onChange={(e) => setQuery(e.currentTarget.value)}
+            onChange={(e) => {
+              setQuery(e.currentTarget.value);
+              setPage(1);
+            }}
           />
         </Grid.Col>
       </Grid>
@@ -229,15 +183,12 @@ function Order({ userToken }) {
         withBorder
         withColumnBorders
         highlightOnHover
-        records={records}
-        totalRecords={total}
-        recordsPerPage={PAGE_SIZE}
-        fetching={loading}
+        fetching={isLoading}
+        records={data?.data}
         page={page}
-        onPageChange={(pageNum) => {
-          setPage(pageNum);
-          fetchPage(pageNum);
-        }}
+        onPageChange={setPage}
+        totalRecords={data?.pagination?.total}
+        recordsPerPage={PAGE_SIZE}
         idAccessor="orderid"
         noRecordsText="Захиалга олдсонгүй"
         rowExpansion={{
@@ -249,11 +200,11 @@ function Order({ userToken }) {
             return <OrderProductsDetail products={record.order_items} />;
           },
         }}
+        pinLastColumn
         columns={[
           {
             accessor: 'orderid',
             title: 'Захиалгын дугаар',
-
             width: 160,
             render: ({ orderid }) => (
               <Flex justify="space-between" align="center" px={5} gap={2}>
@@ -280,12 +231,7 @@ function Order({ userToken }) {
             accessor: 'full_name',
             title: 'Захиалагч',
             width: 200,
-            render: ({ user }) => (
-              <>
-                <Text weight={500}>{user?.family_name}</Text>
-                <Text weight={500}>{user?.given_name}</Text>
-              </>
-            ),
+            render: ({ user }) => <Text weight={500}>{user?.given_name || user?.email}</Text>,
           },
           {
             accessor: 'user.mobile',
@@ -323,7 +269,13 @@ function Order({ userToken }) {
                     </ActionIcon>
                   </Popover.Target>
                   <Popover.Dropdown>
-                    <Radio.Group value={orderFilterValue} onChange={setOrderFilterValue}>
+                    <Radio.Group
+                      value={orderFilterValue}
+                      onChange={(value) => {
+                        setOrderFilterValue(value);
+                        setPage(1);
+                      }}
+                    >
                       <Stack>
                         <Radio value="all" label="Бүгд" size="xs" />
                         {Object.keys(orderStatuses).map((e, i) => {
@@ -362,7 +314,12 @@ function Order({ userToken }) {
             textAlignment: 'center',
             render: ({ status, orderid }) => (
               <Group position="center" spacing={4} noWrap>
-                <Tooltip label="Захиалгын дэлгэрэнгүйг харах" withArrow>
+                <Tooltip
+                  label="Захиалгын дэлгэрэнгүйг харах"
+                  withArrow
+                  position="bottom"
+                  withinPortal
+                >
                   <ActionIcon
                     color="blue"
                     onClick={(e) => {
@@ -380,6 +337,7 @@ function Order({ userToken }) {
                   </ActionIcon>
                 </Tooltip>
                 <Popover
+                  withinPortal
                   opened={popovers?.find((e) => e?.id === orderid)?.isOpen}
                   onChange={(opened) => {
                     const currentPopovers = [...popovers];

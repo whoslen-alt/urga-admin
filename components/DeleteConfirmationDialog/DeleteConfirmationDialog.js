@@ -6,6 +6,8 @@ export function DeleteConfirmationDialog({
   thingToDelete = {},
   onConfirm,
   loading,
+  deleteKey = '',
+  deleteProperty = '',
 }) {
   return (
     <Modal opened={isOpen} onClose={close} title={confirmationText} centered>
@@ -36,6 +38,14 @@ export function DeleteConfirmationDialog({
           radius="xl"
           loading={loading}
           onClick={(e) => {
+            if (deleteKey) {
+              onConfirm(deleteKey);
+              return;
+            }
+            if (deleteProperty) {
+              onConfirm(thingToDelete?.[deleteProperty]);
+              return;
+            }
             onConfirm(thingToDelete?.id);
           }}
           color="red"
