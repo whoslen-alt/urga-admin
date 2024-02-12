@@ -35,7 +35,11 @@ function MainLink({ icon, label, link }) {
           : theme.colorScheme === 'dark'
           ? theme.colors.dark[0]
           : theme.black,
-        backgroundColor: router.asPath.includes(exactPath) ? theme.colors.blue[0] : undefined,
+        backgroundColor: router.asPath.includes(exactPath)
+          ? theme.colorScheme === 'dark'
+            ? theme.colors.dark[6]
+            : theme.colors.blue[0]
+          : undefined,
         '&:hover': {
           backgroundColor:
             theme.colorScheme === 'dark' ? theme.colors.dark[6] : theme.colors.gray[0],
