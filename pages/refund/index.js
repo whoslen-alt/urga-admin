@@ -392,7 +392,7 @@ function Refund({ userToken }) {
                     <Button
                       variant="subtle"
                       size="xs"
-                      disabled={status !== '500'}
+                      disabled={status === '500'}
                       onClick={(e) => {
                         e.stopPropagation();
                         const currentPopovers = [...popovers];
