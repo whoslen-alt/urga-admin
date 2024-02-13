@@ -333,7 +333,7 @@ function Refund({ userToken }) {
               </Group>
             ),
             render: ({ status }) => (
-              <Badge color={orderStatuses[status].color}> {orderStatuses[status].status}</Badge>
+              <Badge color={orderStatuses[status]?.color}> {orderStatuses[status]?.status}</Badge>
             ),
           },
           {

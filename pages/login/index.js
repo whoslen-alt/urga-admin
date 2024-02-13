@@ -53,7 +53,6 @@ export default function Login() {
   };
   return (
     <Stack align="flex-end" justify="flex-start" mt="lg" mr="lg">
-      <ColorSchemeToggle />
       <Container size={480} my={40}>
         <Center>
           <Image src="/logo.png" width={80} height={80} alt="Urgamal Tarimal LLC" />

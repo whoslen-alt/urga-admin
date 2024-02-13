@@ -12,7 +12,7 @@ import {
 import NavigationBar from '../NavigationBar/NavigationBar';
 import Header from '../Header/Header';
 
-export default function DefaultLayout({ children }) {
+export default function DefaultLayout({ children, isAuth }) {
   const theme = useMantineTheme();
   const [opened, setOpened] = useState(false);
   return (
@@ -30,7 +30,7 @@ export default function DefaultLayout({ children }) {
       //     Application footer
       //   </Footer>
       // }
-      navbar={<NavigationBar isOpen={opened} />}
+      navbar={isAuth && <NavigationBar isOpen={opened} />}
     >
       {children}
     </AppShell>

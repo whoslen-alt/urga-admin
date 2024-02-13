@@ -9,6 +9,7 @@ import {
   IconReceiptRefund,
   IconClipboardText,
   IconAdjustments,
+  IconFileInvoice,
 } from '@tabler/icons';
 import { ThemeIcon, UnstyledButton, Group, Text } from '@mantine/core';
 import { useRouter } from 'next/router';
@@ -60,11 +61,12 @@ const data = [
   { icon: <IconList size={16} />, label: 'Ангиллууд', link: '/category/main' },
   { icon: <IconPackage size={16} />, label: 'Бараанууд', link: '/product' },
   { icon: <IconCheckupList size={16} />, label: 'Захиалгууд', link: '/order' },
+  { icon: <IconFileInvoice size={16} />, label: 'Нэхэмжлэл', link: '/invoice' },
+  { icon: <IconReceiptRefund size={16} />, label: 'Буцаалт', link: '/refund' },
   { icon: <IconUsers size={16} />, label: 'Админ хэрэглэгчид', link: '/user' },
   { icon: <IconUserMinus size={16} />, label: 'Эрхийн тохиргоо', link: '/role' },
   { icon: <IconBrowser size={16} />, label: 'Веб сайт тохиргоо', link: '/webconfig' },
   { icon: <IconUnlink size={16} />, label: 'Салбарууд', link: '/branch' },
-  { icon: <IconReceiptRefund size={16} />, label: 'Буцаалт', link: '/refund' },
   { icon: <IconClipboardText size={16} />, label: 'Санал хүсэлт', link: '/feedback' },
   { icon: <IconAdjustments size={16} />, label: 'Тохируулга', link: '/misc' },
 ];

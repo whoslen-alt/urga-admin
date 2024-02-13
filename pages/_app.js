@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import NextApp from 'next/app';
+
 import { getCookie, setCookie } from 'cookies-next';
 import Head from 'next/head';
 import { MantineProvider, ColorSchemeProvider } from '@mantine/core';
@@ -8,7 +9,7 @@ import { HydrationBoundary, QueryClient, QueryClientProvider } from '@tanstack/r
 import { Notifications } from '@mantine/notifications';
 import DefaultLayout from '../components/Layouts/DefaultLayout';
 
-export default function App({ Component, pageProps, ...props }) {
+export default function App({ Component, pageProps, isAuth, ...props }) {
   const [queryClient] = useState(() => new QueryClient());
 
   const [colorScheme, setColorScheme] = useState(props.colorScheme);
@@ -37,7 +38,7 @@ export default function App({ Component, pageProps, ...props }) {
             >
               <ModalsProvider>
                 <Notifications />
-                <DefaultLayout>
+                <DefaultLayout isAuth={isAuth}>
                   <Component {...pageProps} />
                 </DefaultLayout>
               </ModalsProvider>
@@ -53,6 +54,7 @@ App.getInitialProps = async (appContext) => {
   const appProps = await NextApp.getInitialProps(appContext);
   return {
     ...appProps,
+    isAuth: appContext.ctx.req.cookies?.urga_admin_user_jwt,
     colorScheme: getCookie('mantine-color-scheme', appContext.ctx) || 'dark',
   };
 };

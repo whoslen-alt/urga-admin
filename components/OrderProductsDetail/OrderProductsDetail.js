@@ -22,7 +22,7 @@ function OrderProductDetail({ products }) {
                 mih={rem(160)}
               >
                 <Card.Section inheritPadding withBorder pt="md" pb="xs">
-                  <Text fw={500}>{e?.product?.name}</Text>
+                  <Text fw={500}>{e?.product?.name || e?.name}</Text>
                 </Card.Section>
                 <Stack spacing="sm">
                   <Group position="apart" mt="xs" noWrap>

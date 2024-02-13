@@ -40,26 +40,32 @@ import OrderProductsDetail from '../../components/OrderProductsDetail/OrderProdu
 import { refundStatus } from '../../lib/constants/refund_status';
 import { isNotEmpty, useForm } from '@mantine/form';
 import requireAuthentication from '../../lib/requireAuthentication';
-import FeedbackInfoModal from '../../components/FeedbackInfoModal/FeedbackInfoModal';
-import { feedbackStatus } from '../../lib/constants/feedback_status';
+import RefundDetail from '../../components/RefundDetail/RefundDetail';
+import { useInvoices } from '../../hooks/useInvoices';
 
 const PAGE_SIZE = 15;
 const dateFormat = 'YYYY-MM-DD';
 
-function Feedback({ userToken }) {
+function Invoice({ userToken }) {
   const [page, setPage] = useState(1);
-  const [total, setTotal] = useState(0);
-  const [records, setRecords] = useState([]);
-  const [loading, setLoading] = useState(false);
   const [updating, setUpdating] = useState(false);
-  const [detail, setDetail] = useState(null);
   const [query, setQuery] = useState('');
   const [debounced] = useDebouncedValue(query, 500);
   const [popovers, setPopovers] = useState([]);
   const [dates, setDates] = useState([dayjs().subtract(7, 'days'), dayjs()]);
   const [orderFilterValue, setOrderFilterValue] = useState('all');
   const [expandedRecordIds, setExpandedRecordIds] = useState([]);
-  const [opened, { open, close }] = useDisclosure(false);
+  const { data, isLoading, refetch } = useInvoices(
+    {
+      status: orderFilterValue === 'all' ? '' : orderFilterValue,
+      fromDate: dayjs(dates?.[0]).format(dateFormat),
+      untilDate: dayjs(dates?.[1]).format(dateFormat),
+      limit: PAGE_SIZE,
+      offset: page - 1,
+    },
+    userToken
+  );
+
   const orderStatuses = useMemo(() => refundStatus, []);
   const form = useForm({
     initialValues: {
@@ -72,90 +78,15 @@ function Feedback({ userToken }) {
     },
   });
 
-  useEffect(() => {
-    fetchPage(page);
-  }, [dates]);
-
-  useEffect(() => {
-    fetchPage(1);
-  }, [orderFilterValue]);
-
-  //   useEffect(() => {
-  //     handleSearch();
-  //   }, [debounced]);
-
-  //   useEffect(() => {
-  //     setPage(1);
-  //   }, [handleSearch]);
-
-  const sendReply = async ({ body, subject }) => {
-    const title = 'Хариу илгээлт';
-    setUpdating(true);
-    try {
-      const res = await axios.post(
-        `${process.env.NEXT_PUBLIC_API}/admin/feedback`,
-        {
-          body,
-          subject,
-          feedback_id: detail?.id,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${userToken}`,
-          },
-        }
-      );
-      if (res.status === 200 && res.data?.success) {
-        showNotification({
-          title,
-          message: res.data.message,
-          color: 'green',
-          icon: <IconCheck />,
-        });
-        close();
-        await fetchPage(page);
-      } else {
-        showNotification({
-          title,
-          message: res.data.message,
-          color: 'red',
-        });
-      }
-    } catch (e) {
-      showNotification({
-        title,
-        message: e.message,
-        color: 'red',
-      });
-    }
-    setUpdating(false);
-  };
-
-  const fetchPage = async (pageNumber) => {
-    try {
-      setLoading(true);
-      const from = pageNumber - 1;
-      const res = await axios.get(`${process.env.NEXT_PUBLIC_API}/admin/feedback`, {
-        headers: {
-          Authorization: `Bearer ${userToken}`,
-        },
-      });
-      setRecords(res.data.data);
-      setTotal(res.data.pagination?.total);
-      setLoading(false);
-    } catch (e) {}
-  };
-
   return (
     <Container fluid mx="xs" sx={{ maxHeight: '100%' }}>
-      <FeedbackInfoModal opened={opened} close={close} detail={detail} onSubmit={sendReply} />
       <Grid columns={24} position="apart" grow>
-        <Grid.Col span={8}>
+        <Grid.Col span={8} md={4}>
           <Text size="lg" weight={500}>
-            Санал хүсэлт
+            Нэхэмжлэлүүд
           </Text>
         </Grid.Col>
-        {/* <Grid.Col sm={4} xs={24}>
+        {/* <Grid.Col md={8} lg={1} xl={1} sm={4} xs={24}>
           <DatesProvider settings={{ locale: 'mn', firstDayOfWeek: 0, weekendDays: [0] }}>
             <DatePickerInput
               allowSingleDateInRange
@@ -175,21 +106,24 @@ function Feedback({ userToken }) {
               radius="xl"
               valueFormat="YYYY-MM-DD"
               value={dates}
-              onChange={setDates}
+              onChange={(value) => {
+                setDates(value);
+                setPage(1);
+              }}
               labelSeparator="→"
             />
           </DatesProvider>
         </Grid.Col> */}
         {/* <Grid.Col span={6} sm={6} xs={24}>
-          <TextInput
-            placeholder="Захиалгын дугаараар хайх"
-            // , Захиалагч, Холбогдох утас
-            rightSection={<IconSearch size="1rem" />}
-            radius="xl"
-            styles={{ root: { flexGrow: 2 } }}
-            onChange={(e) => setQuery(e.currentTarget.value)}
-          />
-        </Grid.Col> */}
+            <TextInput
+              placeholder="Захиалгын дугаараар хайх"
+              // , Захиалагч, Холбогдох утас
+              rightSection={<IconSearch size="1rem" />}
+              radius="xl"
+              styles={{ root: { flexGrow: 2 } }}
+              onChange={(e) => setQuery(e.currentTarget.value)}
+            />
+          </Grid.Col> */}
       </Grid>
       <DataTable
         height="75vh"
@@ -200,53 +134,65 @@ function Feedback({ userToken }) {
         withBorder
         withColumnBorders
         highlightOnHover
-        records={records}
-        totalRecords={total}
-        recordsPerPage={PAGE_SIZE}
-        fetching={loading}
+        fetching={isLoading}
+        records={data?.invoice}
         page={page}
-        onPageChange={(pageNum) => {
-          setPage(pageNum);
-          fetchPage(pageNum);
-        }}
+        onPageChange={setPage}
+        totalRecords={data?.meta?.total}
+        recordsPerPage={PAGE_SIZE}
         idAccessor="id"
-        noRecordsText="Санал хүсэлт олдсонгүй"
+        noRecordsText="Нэхэмжлэл олдсонгүй"
         rowExpansion={{
           trigger: 'never',
           expanded: {
             recordIds: expandedRecordIds,
           },
           content: ({ record }) => {
-            return <OrderProductsDetail products={record.order_items} />;
+            return <OrderProductsDetail products={record?.order?.order_item} />;
           },
         }}
+        pinLastColumn
         columns={[
           {
-            accessor: 'type',
-            title: 'Төрөл',
-            render: ({ type }) => <Badge> {type}</Badge>,
-          },
-          {
-            accessor: 'title',
-            title: 'Гарчиг',
-          },
-          {
-            accessor: 'email',
-            title: 'Холбогдох имейл',
-          },
-          {
-            accessor: 'status',
-            title: 'Төлөв',
-            render: ({ status }) => (
-              <Badge color={feedbackStatus[status]?.color}> {feedbackStatus[status]?.status}</Badge>
+            accessor: 'orderid',
+            title: 'Захиалгын дугаар',
+            width: '0%',
+            render: ({ orderid }) => (
+              <Flex justify="space-between" align="center" px={5} gap={2}>
+                <Text># {orderid}</Text>
+                <CopyButton value={orderid} timeout={2000}>
+                  {({ copied, copy }) => (
+                    <Tooltip label={copied ? 'Хуулагдлаа' : 'Хуулах'} withArrow position="right">
+                      <ActionIcon
+                        color={copied ? 'teal' : 'gray'}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          copy();
+                        }}
+                      >
+                        {copied ? <IconCheck size="1rem" /> : <IconCopy size="1rem" />}
+                      </ActionIcon>
+                    </Tooltip>
+                  )}
+                </CopyButton>
+              </Flex>
             ),
+          },
+          {
+            accessor: 'company',
+            title: 'Компани',
+            width: '0%',
+          },
+          {
+            accessor: 'contact',
+            title: 'Холбогдох мэдээлэл',
+            width: '0%',
           },
           {
             accessor: 'createdAt',
             title: 'Үүсгэсэн огноо',
             textAlignment: 'center',
-            sortable: true,
-            width: 150,
+            width: '0%',
             render: ({ createdAt }) => (
               <Text>{dayjs(createdAt).format('YYYY-MM-DD HH:MM:ss')}</Text>
             ),
@@ -255,32 +201,31 @@ function Feedback({ userToken }) {
             accessor: 'actions',
             title: <Text>Үйлдэл</Text>,
             textAlignment: 'center',
-            render: ({ id, ...feedbackInfo }) => (
+            width: '0%',
+            render: ({ id }) => (
               <Group position="center" spacing={4} noWrap>
-                <Tooltip label="Дэлгэрэнгүйг харах" withArrow position="bottom" withinPortal>
+                <Tooltip
+                  label="Захиалгын дэлгэрэнгүйг харах"
+                  withArrow
+                  position="bottom"
+                  withinPortal
+                >
                   <ActionIcon
                     color="blue"
                     onClick={(e) => {
                       e.stopPropagation();
-                      setDetail(feedbackInfo);
-                      open();
+                      if (expandedRecordIds.length > 0) {
+                        expandedRecordIds[0] === id
+                          ? setExpandedRecordIds([])
+                          : setExpandedRecordIds([id]);
+                      } else {
+                        setExpandedRecordIds([id]);
+                      }
                     }}
                   >
                     <IconEye size={16} />
                   </ActionIcon>
                 </Tooltip>
-
-                <Button
-                  variant="subtle"
-                  size="xs"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setDetail({ isReply: true, id, ...feedbackInfo });
-                    open();
-                  }}
-                >
-                  Хариу өгөх
-                </Button>
               </Group>
             ),
           },
@@ -298,4 +243,4 @@ export const getServerSideProps = requireAuthentication(async ({ req, res }) => 
   };
 });
 
-export default Feedback;
+export default Invoice;
