@@ -306,7 +306,6 @@ function Product({ userToken }) {
         borderRadius="sm"
         withBorder
         withColumnBorders
-        highlightOnHover
         selectedRecords={selectedRecords}
         onSelectedRecordsChange={setSelectedRecords}
         records={data?.result}

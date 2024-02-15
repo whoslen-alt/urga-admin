@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 
 const fetchInvoices = async ({ status, fromDate, untilDate, limit, offset }, userToken) => {
   const parsed = await ky(
-    `${process.env.NEXT_PUBLIC_API}/order/invoice?offset=${offset}&limit=${limit}`,
+    `${process.env.NEXT_PUBLIC_API}/order/invoice/list?offset=${offset}&limit=${limit}`,
     {
       headers: {
         Authorization: `Bearer ${userToken}`,

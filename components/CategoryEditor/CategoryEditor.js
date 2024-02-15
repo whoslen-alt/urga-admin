@@ -83,7 +83,7 @@ function CategoryEditor({ initialData, type, categories, collapse, onSubmit }) {
                   label="Дэд ангиллууд"
                   size="xs"
                   placeholder="Байхгүй"
-                  data={categories.parentCategories.map((e) => {
+                  data={categories?.parentCategories?.map((e) => {
                     return { value: e.id.toString(), label: e.name };
                   })}
                   {...form.getInputProps('parent_id')}
@@ -98,7 +98,7 @@ function CategoryEditor({ initialData, type, categories, collapse, onSubmit }) {
                     label="Ерөнхий ангиллууд"
                     size="xs"
                     placeholder="Байхгүй"
-                    data={categories.mainCategories.map((e) => {
+                    data={categories?.mainCategories?.map((e) => {
                       return { value: e.id.toString(), label: e.name };
                     })}
                     {...form.getInputProps('main_cat_id')}
@@ -110,7 +110,7 @@ function CategoryEditor({ initialData, type, categories, collapse, onSubmit }) {
                     label="Дэд ангиллууд"
                     size="xs"
                     placeholder="Байхгүй"
-                    data={categories.parentCategories.map((e) => {
+                    data={categories?.parentCategories?.map((e) => {
                       return { value: e.id.toString(), label: e.name };
                     })}
                     {...form.getInputProps('parent_id')}

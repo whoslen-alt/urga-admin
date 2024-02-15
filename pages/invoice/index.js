@@ -133,7 +133,6 @@ function Invoice({ userToken }) {
         borderRadius="sm"
         withBorder
         withColumnBorders
-        highlightOnHover
         fetching={isLoading}
         records={data?.invoice}
         page={page}

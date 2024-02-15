@@ -119,7 +119,7 @@ export function BranchModal({ opened, close, loading, onSubmit, initialData, use
         timeTableContent: initialData?.time_table,
       });
     }
-  }, [initialData]);
+  }, [initialData, opened]);
 
   const handleSubmit = async (fields) => {
     const allFields = {

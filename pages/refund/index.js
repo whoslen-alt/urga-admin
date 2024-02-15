@@ -217,7 +217,6 @@ function Refund({ userToken }) {
         borderRadius="sm"
         withBorder
         withColumnBorders
-        highlightOnHover
         fetching={isLoading}
         records={data?.data}
         page={page}
@@ -385,6 +384,7 @@ function Refund({ userToken }) {
                     }
                   }}
                   position="bottom"
+                  withinPortal
                   withArrow
                   shadow="md"
                 >

@@ -199,7 +199,6 @@ function Feedback({ userToken }) {
         borderRadius="sm"
         withBorder
         withColumnBorders
-        highlightOnHover
         records={records}
         totalRecords={total}
         recordsPerPage={PAGE_SIZE}

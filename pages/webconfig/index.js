@@ -181,10 +181,10 @@ function WebConfig({ userToken }) {
       const file = acceptedFiles[0];
       formData.append('img', file, file.name);
       axios
-        .post(`${process.env.NEXT_PUBLIC_API}/admin/upload`, formData, config)
+        .post(`${process.env.NEXT_PUBLIC_API}/admin/product/upload`, formData, config)
         .then((value) => {
           if (value.status === 200) {
-            const imgUrl = value.data.data;
+            const imgUrl = value.data.url;
             form.setFieldValue('logo', imgUrl);
           }
           return setIsFileUploading(false);
@@ -304,12 +304,7 @@ function WebConfig({ userToken }) {
   );
 }
 
-export const getServerSideProps = requireAuthentication(async ({ req, res }) => {
-  // const response = await axios.get(`${process.env.NEXT_PUBLIC_API}/config/layout`, {
-  //   headers: {
-  //     Authorization: `Bearer ${req.cookies.urga_admin_user_jwt}`,
-  //   },
-  // });
+export const getServerSideProps = requireAuthentication(async ({ req }) => {
   return {
     props: {
       userToken: req.cookies.urga_admin_user_jwt,

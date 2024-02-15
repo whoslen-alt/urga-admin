@@ -81,7 +81,6 @@ const MainCategory = ({ userToken }) => {
         borderRadius="sm"
         withBorder
         withColumnBorders
-        highlightOnHover
         records={data?.categories}
         // selectedRecords={selectedRecords}
         // onSelectedRecordsChange={setSelectedRecords}
@@ -129,9 +128,9 @@ const MainCategory = ({ userToken }) => {
             ),
           },
           {
-            accessor: 'child_cats',
+            accessor: 'secondary_cats',
             title: 'Дэд ангиллууд',
-            render: ({ child_cats, id }) => (
+            render: ({ secondary_cats, id }) => (
               <MultiSelect
                 size="xs"
                 placeholder="Байхгүй"
@@ -153,8 +152,8 @@ const MainCategory = ({ userToken }) => {
                     },
                   },
                 })}
-                data={child_cats?.map((e) => ({ value: e.id.toString(), label: e.name }))}
-                defaultValue={child_cats?.map((e) => e.id.toString())}
+                data={secondary_cats?.map((e) => ({ value: e.id.toString(), label: e.name }))}
+                defaultValue={secondary_cats?.map((e) => e.id.toString())}
                 readOnly
               />
             ),

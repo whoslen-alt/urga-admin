@@ -25,7 +25,7 @@ export function CategoryModal({ opened, close, type, loading, onSubmit }) {
   });
   const [files, setFiles] = useState([]);
 
-  const previews = files.map((file, index) => {
+  const previews = files?.map((file, index) => {
     const imageUrl = URL.createObjectURL(file);
     return (
       <Stack spacing={0} pos="relative" key={index}>

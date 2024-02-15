@@ -20,7 +20,6 @@ const ChildCategory = () => {
       borderRadius="sm"
       withBorder
       withColumnBorders
-      highlightOnHover
       records={data?.categories}
       totalRecords={data?.meta?.total}
       recordsPerPage={PAGE_SIZE}

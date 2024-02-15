@@ -235,7 +235,6 @@ function Role({ users, total: totalRoles, userToken }) {
         borderRadius="sm"
         withBorder
         withColumnBorders
-        highlightOnHover
         records={records}
         fetching={loading}
         page={page}

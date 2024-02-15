@@ -182,7 +182,6 @@ function Order({ userToken }) {
         borderRadius="sm"
         withBorder
         withColumnBorders
-        highlightOnHover
         fetching={isLoading}
         records={data?.data}
         page={page}

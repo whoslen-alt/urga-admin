@@ -254,7 +254,6 @@ function User({ users, total: totalUsers, userToken }) {
         borderRadius="sm"
         withBorder
         withColumnBorders
-        highlightOnHover
         records={records}
         fetching={loading || isLoading}
         page={page}
