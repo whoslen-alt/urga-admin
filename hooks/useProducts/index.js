@@ -13,9 +13,9 @@ const fetchProducts = async ({ query, limit, offset }, userToken) => {
   return parsed;
 };
 
-const useProducts = ({ query, limit, offset }, userToken) => {
+const useProducts = ({ query, limit, offset, keys }, userToken) => {
   return useQuery({
-    queryKey: ['products', query, limit, offset],
+    queryKey: ['products', query, limit, offset, keys],
     queryFn: () => fetchProducts({ query, limit, offset }, userToken),
   });
 };

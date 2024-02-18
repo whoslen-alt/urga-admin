@@ -13,13 +13,10 @@ const PAGE_SIZE = 15;
 
 const MainCategory = ({ userToken }) => {
   const [pageNumber, setPageNumber] = useState(1);
+  const [keys, setKeys] = useState('');
   const [currentCategoryId, setCurrentCategoryId] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
-  const { data, isPending, isFetching, refetch, isRefetching } = useCategories(
-    '1',
-    PAGE_SIZE,
-    pageNumber - 1
-  );
+  const { data, isPending, isFetching } = useCategories('1', PAGE_SIZE, pageNumber - 1, keys);
   const [opened, { open, close }] = useDisclosure(false);
 
   const config = {
@@ -47,7 +44,7 @@ const MainCategory = ({ userToken }) => {
           color: 'green',
           icon: <IconCheck />,
         });
-        await refetch();
+        setKeys(Math.random());
       } else {
         showNotification({
           title: title + ' амжилтгүй',
@@ -84,7 +81,7 @@ const MainCategory = ({ userToken }) => {
         records={data?.categories}
         // selectedRecords={selectedRecords}
         // onSelectedRecordsChange={setSelectedRecords}
-        fetching={isFetching || isPending || isRefetching}
+        fetching={isFetching || isPending}
         totalRecords={data?.meta?.total}
         recordsPerPage={PAGE_SIZE}
         page={pageNumber}

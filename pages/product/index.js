@@ -56,6 +56,7 @@ function Product({ userToken }) {
   const [selectedRecords, setSelectedRecords] = useState([]);
   const [page, setPage] = useState(1);
   const [query, setQuery] = useState('');
+  const [keys, setKeys] = useState('');
   const [uploading, setUploading] = useState(false);
   const [updating, setUpdating] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -64,11 +65,12 @@ function Product({ userToken }) {
   const [excelUploaderOpened, { open: openExcelUploader, close: closeExcelUploader }] =
     useDisclosure(false);
   const [debounced] = useDebouncedValue(query, 500);
-  const { data, isLoading, refetch } = useProducts(
+  const { data, isLoading } = useProducts(
     {
       limit: PAGE_SIZE,
       offset: page - 1,
       query: debounced,
+      keys,
     },
     userToken
   );
@@ -101,7 +103,7 @@ function Product({ userToken }) {
           color: 'green',
           icon: <IconCheck />,
         });
-        await refetch();
+        setKeys(Math.random());
       } else {
         showNotification({
           title: 'Бараа устгалт',
@@ -152,7 +154,7 @@ function Product({ userToken }) {
           color: 'green',
           icon: <IconCheck />,
         });
-        await refetch();
+        setKeys(Math.random());
       } else {
         showNotification({
           title,
@@ -194,7 +196,7 @@ function Product({ userToken }) {
           color: 'green',
           icon: <IconCheck />,
         });
-        await refetch();
+        setKeys(Math.random());
       } else {
         showNotification({
           title,

@@ -8,9 +8,9 @@ const fetchCategories = async (level = 1, limit = 15, offset = 0) => {
   return parsed;
 };
 
-const useCategories = (level, limit, offset) => {
+const useCategories = (level, limit, offset, keys) => {
   return useQuery({
-    queryKey: ['categories', level, limit, offset],
+    queryKey: ['categories', level, limit, offset, keys],
     queryFn: () => fetchCategories(level, limit, offset),
   });
 };

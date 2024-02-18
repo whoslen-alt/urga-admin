@@ -50,18 +50,20 @@ function Refund({ userToken }) {
   const [page, setPage] = useState(1);
   const [updating, setUpdating] = useState(false);
   const [query, setQuery] = useState('');
+  const [keys, setKeys] = useState('');
   const [debounced] = useDebouncedValue(query, 500);
   const [popovers, setPopovers] = useState([]);
   const [dates, setDates] = useState([dayjs().subtract(7, 'days'), dayjs()]);
   const [orderFilterValue, setOrderFilterValue] = useState('all');
   const [expandedRecordIds, setExpandedRecordIds] = useState([]);
-  const { data, isLoading, refetch } = useRefunds(
+  const { data, isLoading } = useRefunds(
     {
       status: orderFilterValue === 'all' ? '' : orderFilterValue,
       fromDate: dayjs(dates?.[0]).format(dateFormat),
       untilDate: dayjs(dates?.[1]).format(dateFormat),
       limit: PAGE_SIZE,
       offset: page - 1,
+      keys,
     },
     userToken
   );
@@ -106,7 +108,7 @@ function Refund({ userToken }) {
           color: 'green',
           icon: <IconCheck />,
         });
-        await refetch();
+        setKeys(Math.random());
         form.reset();
         setPopovers(currentPopovers);
       } else {

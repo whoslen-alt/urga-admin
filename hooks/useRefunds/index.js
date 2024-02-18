@@ -19,9 +19,9 @@ const fetchRefunds = async ({ status, fromDate, untilDate, limit, offset }, user
   return parsed;
 };
 
-const useRefunds = ({ status, fromDate, untilDate, limit, offset }, userToken) => {
+const useRefunds = ({ status, fromDate, untilDate, limit, offset, keys }, userToken) => {
   return useQuery({
-    queryKey: ['refunds', status, fromDate, untilDate, limit, offset],
+    queryKey: ['refunds', status, fromDate, untilDate, limit, offset, keys],
     queryFn: () => fetchRefunds({ status, fromDate, untilDate, limit, offset }, userToken),
   });
 };

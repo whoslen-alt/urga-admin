@@ -1470,6 +1470,26 @@
   resolved "https://registry.npmjs.org/@tiptap/extension-superscript/-/extension-superscript-2.1.7.tgz"
   integrity sha512-Cd1GlrnF3OGdONysa20boVN4M/aegTb+Fg/KbiGV/ZJhhPfmktQesf2eL1nE6Y/mxQcF1+EolWrptv0n3C8WPQ==
 
+"@tiptap/extension-table-cell@^2.2.3":
+  version "2.2.3"
+  resolved "https://registry.npmjs.org/@tiptap/extension-table-cell/-/extension-table-cell-2.2.3.tgz"
+  integrity sha512-VB+nOMtep9n3g6wU2ISZbBWzru2XIPiYVlyGkclmW3QzeFw3FC8JLY5HDDaSfuBgLL4/Ll17ol9WDkv62jlP/Q==
+
+"@tiptap/extension-table-header@^2.2.3":
+  version "2.2.3"
+  resolved "https://registry.npmjs.org/@tiptap/extension-table-header/-/extension-table-header-2.2.3.tgz"
+  integrity sha512-tuuGjfmwuSEHbSMqFMG7BsfgL89KUIvUecukesrs10GJXKh96LKPpFk7JeM0rXAOIDiR6DLF8gfhF1a+OlBpWQ==
+
+"@tiptap/extension-table-row@^2.2.3":
+  version "2.2.3"
+  resolved "https://registry.npmjs.org/@tiptap/extension-table-row/-/extension-table-row-2.2.3.tgz"
+  integrity sha512-PohdsPNciwD5fN7I0cthOK8204GbYTZVe2YX1S54dCwoTIlzbJiWiFBLlftP0kqveWLTJD4l1CO0tUku39eFEA==
+
+"@tiptap/extension-table@^2.2.3":
+  version "2.2.3"
+  resolved "https://registry.npmjs.org/@tiptap/extension-table/-/extension-table-2.2.3.tgz"
+  integrity sha512-k5LwCHribSms7e+oxdqB8S7V7F9VAn2HYncDQnnOm8+v09/JfqX1siWGGKaDeZGZ6BAKgOYx0hOf/RSWSTM8og==
+
 "@tiptap/extension-text-align@^2.1.7":
   version "2.1.7"
   resolved "https://registry.npmjs.org/@tiptap/extension-text-align/-/extension-text-align-2.1.7.tgz"

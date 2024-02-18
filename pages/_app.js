@@ -8,7 +8,7 @@ import { ModalsProvider } from '@mantine/modals';
 import { HydrationBoundary, QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Notifications } from '@mantine/notifications';
 import DefaultLayout from '../components/Layouts/DefaultLayout';
-
+import '../styles.css';
 export default function App({ Component, pageProps, isAuth, ...props }) {
   const [queryClient] = useState(() => new QueryClient());
 
@@ -54,7 +54,7 @@ App.getInitialProps = async (appContext) => {
   const appProps = await NextApp.getInitialProps(appContext);
   return {
     ...appProps,
-    isAuth: appContext.ctx.req.cookies?.urga_admin_user_jwt,
+    isAuth: appContext.ctx.req?.cookies?.urga_admin_user_jwt,
     colorScheme: getCookie('mantine-color-scheme', appContext.ctx) || 'dark',
   };
 };

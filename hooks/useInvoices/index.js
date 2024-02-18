@@ -13,11 +13,27 @@ const fetchInvoices = async ({ status, fromDate, untilDate, limit, offset }, use
   return parsed;
 };
 
-const useInvoices = ({ status, fromDate, untilDate, limit, offset }, userToken) => {
+const fetchInvoice = async ({ orderId }, userToken) => {
+  const parsed = await ky(`${process.env.NEXT_PUBLIC_API}/order/invoice/file?orderid=${orderId}`, {
+    headers: {
+      Authorization: `Bearer ${userToken}`,
+    },
+  }).json();
+  return parsed;
+};
+
+const useInvoices = ({ status, fromDate, untilDate, limit, offset, keys }, userToken) => {
   return useQuery({
-    queryKey: ['refunds', status, fromDate, untilDate, limit, offset],
+    queryKey: ['refunds', status, fromDate, untilDate, limit, offset, keys],
     queryFn: () => fetchInvoices({ status, fromDate, untilDate, limit, offset }, userToken),
   });
 };
 
-export { useInvoices, fetchInvoices };
+const useInvoice = ({ orderId }, userToken) => {
+  return useQuery({
+    queryKey: ['refunds', orderId],
+    queryFn: () => fetchInvoice({ orderId }, userToken),
+  });
+};
+
+export { useInvoices, fetchInvoices, useInvoice };

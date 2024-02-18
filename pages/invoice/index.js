@@ -37,11 +37,13 @@ import { DatesProvider, DatePickerInput, Calendar } from '@mantine/dates';
 import 'dayjs/locale/mn';
 import dayjs from 'dayjs';
 import OrderProductsDetail from '../../components/OrderProductsDetail/OrderProductsDetail';
-import { refundStatus } from '../../lib/constants/refund_status';
+import { invoiceStatus } from '../../lib/constants/invoice_status';
 import { isNotEmpty, useForm } from '@mantine/form';
 import requireAuthentication from '../../lib/requireAuthentication';
 import RefundDetail from '../../components/RefundDetail/RefundDetail';
 import { useInvoices } from '../../hooks/useInvoices';
+import { IconFileInvoice } from '@tabler/icons-react';
+import InvoicePreview from '../../components/InvoicePreview/InvoicePreview';
 
 const PAGE_SIZE = 15;
 const dateFormat = 'YYYY-MM-DD';
@@ -49,37 +51,89 @@ const dateFormat = 'YYYY-MM-DD';
 function Invoice({ userToken }) {
   const [page, setPage] = useState(1);
   const [updating, setUpdating] = useState(false);
+  const [currentOrderId, setCurrentOrderId] = useState(null);
   const [query, setQuery] = useState('');
+  const [keys, setKeys] = useState('');
   const [debounced] = useDebouncedValue(query, 500);
   const [popovers, setPopovers] = useState([]);
+  const [invoicePrevOpened, { open: openInvoicePreview, close: closeInvoicePreview }] =
+    useDisclosure(false);
   const [dates, setDates] = useState([dayjs().subtract(7, 'days'), dayjs()]);
   const [orderFilterValue, setOrderFilterValue] = useState('all');
   const [expandedRecordIds, setExpandedRecordIds] = useState([]);
-  const { data, isLoading, refetch } = useInvoices(
+  const { data, isLoading } = useInvoices(
     {
       status: orderFilterValue === 'all' ? '' : orderFilterValue,
       fromDate: dayjs(dates?.[0]).format(dateFormat),
       untilDate: dayjs(dates?.[1]).format(dateFormat),
       limit: PAGE_SIZE,
       offset: page - 1,
+      keys,
     },
     userToken
   );
 
-  const orderStatuses = useMemo(() => refundStatus, []);
+  const invoiceStatuses = useMemo(() => invoiceStatus, []);
+
   const form = useForm({
     initialValues: {
       status: '',
-      note: '',
     },
     validate: {
       status: isNotEmpty('Төлөв сонгоно уу'),
-      note: isNotEmpty('Хариу бичнэ үү'),
     },
   });
 
+  const updateInvoiceStatus = async (id, status) => {
+    const title = 'Хүсэлтийн хариу';
+
+    setUpdating(true);
+    try {
+      const res = await axios.put(
+        `${process.env.NEXT_PUBLIC_API}/order/invoice`,
+        {
+          invoice_id: id,
+          status,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${userToken}`,
+          },
+        }
+      );
+      if (res.status === 200 && res.data?.success) {
+        showNotification({
+          title,
+          message: res.data.message,
+          color: 'green',
+          icon: <IconCheck />,
+        });
+        setKeys(Math.random());
+      } else {
+        showNotification({
+          title,
+          message: res.data.message,
+          color: 'red',
+        });
+      }
+    } catch (e) {
+      showNotification({
+        title,
+        message: e.message,
+        color: 'red',
+      });
+    }
+    setUpdating(false);
+  };
+
   return (
     <Container fluid mx="xs" sx={{ maxHeight: '100%' }}>
+      <InvoicePreview
+        isOpen={invoicePrevOpened}
+        orderId={currentOrderId}
+        userToken={userToken}
+        close={closeInvoicePreview}
+      />
       <Grid columns={24} position="apart" grow>
         <Grid.Col span={8} md={4}>
           <Text size="lg" weight={500}>
@@ -188,6 +242,52 @@ function Invoice({ userToken }) {
             width: '0%',
           },
           {
+            accessor: 'status',
+            title: 'Төлөв',
+            // (
+            //   <Group position="center">
+            //     <Text>Төлөв</Text>
+            //     <Popover position="bottom" withArrow shadow="md">
+            //       <Popover.Target>
+            //         <ActionIcon radius="xl">
+            //           <IconFilter size="1.125rem" />
+            //         </ActionIcon>
+            //       </Popover.Target>
+            //       <Popover.Dropdown>
+            //         <Radio.Group
+            //           value={orderFilterValue}
+            //           onChange={(value) => {
+            //             setOrderFilterValue(value);
+            //             setPage(1);
+            //           }}
+            //         >
+            //           <Stack>
+            //             <Radio value="all" label="Бүгд" size="xs" />
+            //             {Object.keys(orderStatuses).map((e, i) => {
+            //               return (
+            //                 <Radio
+            //                   key={`order-status-filter-radio-${i}`}
+            //                   value={e}
+            //                   label={orderStatuses[e].status}
+            //                   size="xs"
+            //                 />
+            //               );
+            //             })}
+            //           </Stack>
+            //         </Radio.Group>
+            //       </Popover.Dropdown>
+            //     </Popover>
+            //   </Group>
+            // ),
+            width: '0%',
+            render: ({ status }) => (
+              <Badge color={invoiceStatuses[status]?.color}>
+                {' '}
+                {invoiceStatuses[status]?.status}
+              </Badge>
+            ),
+          },
+          {
             accessor: 'createdAt',
             title: 'Үүсгэсэн огноо',
             textAlignment: 'center',
@@ -201,8 +301,20 @@ function Invoice({ userToken }) {
             title: <Text>Үйлдэл</Text>,
             textAlignment: 'center',
             width: '0%',
-            render: ({ id }) => (
+            render: ({ id, orderid }) => (
               <Group position="center" spacing={4} noWrap>
+                <Tooltip label="Нэхэмжлэл харах" withArrow position="bottom" withinPortal>
+                  <ActionIcon
+                    color="blue"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setCurrentOrderId(orderid);
+                      openInvoicePreview();
+                    }}
+                  >
+                    <IconFileInvoice size={16} />
+                  </ActionIcon>
+                </Tooltip>
                 <Tooltip
                   label="Захиалгын дэлгэрэнгүйг харах"
                   withArrow
@@ -225,6 +337,42 @@ function Invoice({ userToken }) {
                     <IconEye size={16} />
                   </ActionIcon>
                 </Tooltip>
+
+                <Popover position="bottom" withinPortal withArrow shadow="md">
+                  <Popover.Target>
+                    <Button variant="subtle" size="xs">
+                      Хариу өгөх
+                    </Button>
+                  </Popover.Target>
+                  <Popover.Dropdown>
+                    <form
+                      onSubmit={form.onSubmit(async ({ status }) => {
+                        await updateInvoiceStatus(id, status);
+                      })}
+                    >
+                      <Stack spacing="md">
+                        <Select
+                          label="Нэхэмжлэлийн төлөв"
+                          placeholder="Шийдвэрлэх төлөв сонгоно уу"
+                          size="xs"
+                          data={Object.keys(invoiceStatuses).map((e, i) => {
+                            return {
+                              value: e,
+                              label: invoiceStatuses[e].status,
+                            };
+                          })}
+                          {...form.getInputProps('status')}
+                        />
+
+                        <Flex justify="flex-end">
+                          <Button size="xs" loading={updating} type="submit">
+                            ОК
+                          </Button>
+                        </Flex>
+                      </Stack>
+                    </form>
+                  </Popover.Dropdown>
+                </Popover>
               </Group>
             ),
           },

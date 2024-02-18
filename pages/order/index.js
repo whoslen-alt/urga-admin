@@ -46,6 +46,7 @@ const dateFormat = 'YYYY-MM-DD';
 function Order({ userToken }) {
   const [page, setPage] = useState(1);
   const [updating, setUpdating] = useState(false);
+  const [keys, setKeys] = useState('');
   const [query, setQuery] = useState('');
   const [debounced] = useDebouncedValue(query, 500);
   const [popovers, setPopovers] = useState([]);
@@ -54,7 +55,7 @@ function Order({ userToken }) {
   const [expandedRecordIds, setExpandedRecordIds] = useState([]);
   const orderStatuses = useMemo(() => orderStatus, []);
 
-  const { data, isLoading, refetch } = useOrders(
+  const { data, isLoading } = useOrders(
     {
       status: orderFilterValue === 'all' ? '' : orderFilterValue,
       orderId: debounced.trim(),
@@ -62,6 +63,7 @@ function Order({ userToken }) {
       untilDate: dayjs(dates?.[1]).format(dateFormat),
       limit: PAGE_SIZE,
       offset: page - 1,
+      keys,
     },
     userToken
   );
@@ -105,7 +107,7 @@ function Order({ userToken }) {
           icon: <IconCheck />,
         });
 
-        await refetch();
+        setKeys(Math.random());
         setPopovers(currentPopovers);
       } else {
         showNotification({

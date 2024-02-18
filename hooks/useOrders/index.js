@@ -13,9 +13,9 @@ const fetchOrders = async ({ status, orderId, fromDate, untilDate, limit, offset
   return parsed;
 };
 
-const useOrders = ({ status, orderId, fromDate, untilDate, limit, offset }, userToken) => {
+const useOrders = ({ status, orderId, fromDate, untilDate, limit, offset, keys }, userToken) => {
   return useQuery({
-    queryKey: ['orders', status, orderId, fromDate, untilDate, limit, offset],
+    queryKey: ['orders', status, orderId, fromDate, untilDate, limit, offset, keys],
     queryFn: () => fetchOrders({ status, orderId, fromDate, untilDate, limit, offset }, userToken),
   });
 };

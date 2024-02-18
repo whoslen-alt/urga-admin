@@ -38,11 +38,7 @@ const ParentCategory = () => {
     1000,
     pageNumber - 1
   );
-  const { data, isPending, isFetching, isRefetching } = useCategories(
-    '2',
-    PAGE_SIZE,
-    pageNumber - 1
-  );
+  const { data, isPending, isFetching } = useCategories('2', PAGE_SIZE, pageNumber - 1);
   const { data: mainCatData, isFetching: isFetchingMain } = useCategories(
     '1',
     1000,
@@ -60,7 +56,7 @@ const ParentCategory = () => {
       records={data?.categories}
       // selectedRecords={selectedRecords}
       // onSelectedRecordsChange={setSelectedRecords}
-      fetching={isFetching || isPending || isRefetching}
+      fetching={isFetching || isPending}
       totalRecords={data?.meta?.total}
       recordsPerPage={PAGE_SIZE}
       page={pageNumber}
