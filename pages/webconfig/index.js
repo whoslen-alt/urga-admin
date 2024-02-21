@@ -29,6 +29,7 @@ import { swatches } from '../../lib/constants/swatches';
 
 function WebConfig({ userToken }) {
   const [isFileUploading, setIsFileUploading] = useState(false);
+  const [isBannerUploading, setIsBannerUploading] = useState(false);
   const [loading, setLoading] = useState(false);
   const [updating, setUpdating] = useState(false);
   const [editors, setEditors] = useState({
@@ -47,6 +48,7 @@ function WebConfig({ userToken }) {
       footer_color: '',
       background_color: '',
       logo: null,
+      banners: [],
     },
   });
 
@@ -116,6 +118,7 @@ function WebConfig({ userToken }) {
           footer_color: configData?.footer_color || '',
           background_color: configData?.background_color || '',
           logo: configData?.logo,
+          banners: configData?.banners,
         });
         setEditors({
           locationContent: configData?.location,
@@ -126,7 +129,7 @@ function WebConfig({ userToken }) {
     } catch (e) {}
     setLoading(false);
   };
-  const handleSubmit = async ({ header_color, footer_color, background_color, logo }) => {
+  const handleSubmit = async ({ header_color, footer_color, background_color, logo, banners }) => {
     setLoading(true);
     const title = 'Веб сайтын тохиргоо';
     try {
@@ -140,6 +143,7 @@ function WebConfig({ userToken }) {
           location: locationEditor.getHTML(),
           work_hours: workHourEditor.getHTML(),
           contact: contactEditor.getHTML(),
+          banners,
         },
         config
       );
@@ -190,6 +194,29 @@ function WebConfig({ userToken }) {
           return setIsFileUploading(false);
         })
         .catch((err) => setIsFileUploading(false));
+    }
+  };
+
+  const handleBannerDrop = async (acceptedFiles) => {
+    if (acceptedFiles) {
+      for (const file of acceptedFiles) {
+        setIsBannerUploading(true);
+        const formData = new FormData();
+        formData.append('img', file, file.name);
+
+        axios
+          .post(`${process.env.NEXT_PUBLIC_API}/admin/product/upload`, formData, config)
+          .then((value) => {
+            if (value.status === 200) {
+              const imgUrl = value.data.url;
+              form.insertListItem('banners', imgUrl);
+            }
+          })
+          .catch((err) => setIsBannerUploading(false))
+          .finally(() => {
+            setIsBannerUploading(false);
+          });
+      }
     }
   };
 
@@ -290,6 +317,47 @@ function WebConfig({ userToken }) {
                     </ActionIcon>
                   </Stack>
                 )}
+              </SimpleGrid>
+            </div>
+          </Grid.Col>
+          <Grid.Col span={12}>
+            <Text weight={500} size="sm">
+              Banner зургууд
+            </Text>
+            <div>
+              <Dropzone
+                mt="xs"
+                accept={[MIME_TYPES.png, MIME_TYPES.jpeg, MIME_TYPES.svg]}
+                onDrop={(acceptedFiles) => {
+                  handleBannerDrop(acceptedFiles);
+                }}
+                loading={isBannerUploading}
+              >
+                <Text align="center" size="sm">
+                  Та файлаа энд хуулна уу
+                </Text>
+              </Dropzone>
+              <SimpleGrid cols={7} breakpoints={[{ maxWidth: 'sm', cols: 1 }]} mt="xl">
+                {form.values.banners &&
+                  form.values.banners?.map((banner, index) => (
+                    <Stack spacing={0} pos="relative">
+                      <Image src={banner} withPlaceholder fit="contain" />
+                      <ActionIcon
+                        variant="filled"
+                        radius="xl"
+                        color="red"
+                        size="xs"
+                        pos="absolute"
+                        top={-10}
+                        right={-10}
+                        onClick={() => {
+                          form.removeListItem('banners', index);
+                        }}
+                      >
+                        <IconX size="0.8rem" />
+                      </ActionIcon>
+                    </Stack>
+                  ))}
               </SimpleGrid>
             </div>
           </Grid.Col>

@@ -27,6 +27,7 @@ import {
   IconPhoto,
   IconPhotoOff,
   IconPlus,
+  IconRefresh,
   IconSearch,
   IconTrash,
   IconUsers,
@@ -252,7 +253,39 @@ function Product({ userToken }) {
     }
     setUploading(false);
   };
-
+  const handleSync = async () => {
+    const title = 'ERP sync';
+    try {
+      const res = await axios.post(
+        `${process.env.NEXT_PUBLIC_API}/erp/sync/products`,
+        {},
+        {
+          headers: { Authorization: `Bearer ${userToken}` },
+        }
+      );
+      if (res.status === 200) {
+        showNotification({
+          title,
+          message: res.data.message,
+          color: 'green',
+          icon: <IconCheck />,
+        });
+        setKeys(Math.random());
+      } else {
+        showNotification({
+          title,
+          message: res.data.message,
+          color: 'red',
+        });
+      }
+    } catch (e) {
+      showNotification({
+        title,
+        message: e.message,
+        color: 'red',
+      });
+    }
+  };
   return (
     <Container fluid mx="xs" sx={{ maxHeight: '100%' }}>
       <Grid position="apart" grow>
@@ -261,18 +294,23 @@ function Product({ userToken }) {
             Бараанууд
           </Text>
         </Grid.Col>
-        <Grid.Col span={4} offset={3}>
-          <TextInput
-            placeholder="Бараа хайх... (Нэр)"
-            rightSection={<IconSearch size="1rem" />}
-            radius="xl"
-            styles={{ root: { flexGrow: 2 } }}
-            onChange={(e) => {
-              e.preventDefault();
-              setQuery(e.currentTarget.value);
-              setPage(1);
-            }}
-          />
+        <Grid.Col span={5} offset={2}>
+          <Group>
+            <TextInput
+              placeholder="Бараа хайх... (Нэр)"
+              rightSection={<IconSearch size="1rem" />}
+              radius="xl"
+              styles={{ root: { flexGrow: 2 } }}
+              onChange={(e) => {
+                e.preventDefault();
+                setQuery(e.currentTarget.value);
+                setPage(1);
+              }}
+            />
+            <Button variant="filled" rightIcon={<IconRefresh size="1rem" />} onClick={handleSync}>
+              Sync with ERP
+            </Button>
+          </Group>
         </Grid.Col>
         {/* <Grid.Col span={2}>
           <Group position="center">

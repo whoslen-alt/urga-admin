@@ -26,7 +26,7 @@ import { DataTable } from 'mantine-datatable';
 import { useState, useEffect, useMemo } from 'react';
 import { useDisclosure } from '@mantine/hooks';
 import DefaultLayout from '../../components/Layouts/DefaultLayout';
-import { IconCheck, IconEdit, IconTrash, IconX, IconPlus } from '@tabler/icons';
+import { IconCheck, IconEdit, IconTrash, IconX, IconPlus, IconRefresh } from '@tabler/icons';
 import { CategoryModal } from '../../components/CategoryModal/CategoryModal';
 import dayjs from 'dayjs';
 import { DeleteConfirmationDialog } from '../../components/DeleteConfirmationDialog/DeleteConfirmationDialog';
@@ -305,6 +305,39 @@ function Category({ mainCats, parentCats, childCats, userToken }) {
     open();
   };
 
+  const handleSync = async () => {
+    const title = 'ERP sync';
+    try {
+      const res = await axios.post(
+        `${process.env.NEXT_PUBLIC_API}/erp/sync/cats`,
+        {},
+        {
+          headers: { Authorization: `Bearer ${userToken}` },
+        }
+      );
+      if (res.status === 200) {
+        showNotification({
+          title,
+          message: res.data.message,
+          color: 'green',
+          icon: <IconCheck />,
+        });
+      } else {
+        showNotification({
+          title,
+          message: res.data.message,
+          color: 'red',
+        });
+      }
+    } catch (e) {
+      showNotification({
+        title,
+        message: e.message,
+        color: 'red',
+      });
+    }
+  };
+
   const [deletingCategoryData, setDeletingCategoryData] = useState({});
   return (
     <Container fluid mx="xs" sx={{ maxHeight: '100%' }}>
@@ -332,6 +365,14 @@ function Category({ mainCats, parentCats, childCats, userToken }) {
               Ангиллууд
             </Text>
           </Grid.Col>
+          <Button
+            mt="md"
+            variant="filled"
+            rightIcon={<IconRefresh size="1rem" />}
+            onClick={handleSync}
+          >
+            Sync with ERP
+          </Button>
           {/* <Grid.Col span={4}>
                 <TextInput
                   placeholder="Ангилал хайх"

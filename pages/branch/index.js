@@ -1,5 +1,6 @@
 import {
   ActionIcon,
+  AspectRatio,
   Button,
   Card,
   Container,
@@ -267,7 +268,9 @@ const Branch = ({ userToken }) => {
                 onClick={() => openModal(branch)}
               >
                 <Card.Section>
-                  <Image height={240} src={branch?.img_url?.[0]} alt={branch?.name + 'зураг'} />
+                  <AspectRatio ratio={1080 / 720} h={240}>
+                    <Image src={branch?.img_url?.[0]} alt={branch?.name + 'зураг'} />
+                  </AspectRatio>
                 </Card.Section>
 
                 <Group position="apart" align="center">
