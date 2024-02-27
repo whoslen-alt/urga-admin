@@ -141,7 +141,7 @@ function Feedback({ userToken }) {
         },
       });
       setRecords(res.data.data);
-      setTotal(res.data.pagination?.total);
+      setTotal(res.data.meta?.total);
       setLoading(false);
     } catch (e) {}
   };

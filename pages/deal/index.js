@@ -44,9 +44,8 @@ const Deal = ({ userToken }) => {
   const [confirmationOpened, { open: openConfirmation, close: closeConfirmation }] =
     useDisclosure(false);
 
-  const { data, isLoading, isFetching } = useDeals(keys, PAGE_SIZE, pageNumber - 1);
+  const { data, isLoading, isFetching } = useDeals(keys, PAGE_SIZE, (pageNumber - 1) * PAGE_SIZE);
   const [opened, { open, close }] = useDisclosure(false);
-  const [creatingOpened, { open: openCreating, close: closeCreating }] = useDisclosure(false);
 
   const openDeleteConfirmation = (id, name) => {
     setDeletingDealData({ id, name });
@@ -237,10 +236,8 @@ const Deal = ({ userToken }) => {
         withBorder
         withColumnBorders
         records={data?.data}
-        // selectedRecords={selectedRecords}
-        // onSelectedRecordsChange={setSelectedRecords}
         fetching={isLoading}
-        // totalRecords={data?.meta?.total}
+        totalRecords={data?.meta?.total}
         recordsPerPage={PAGE_SIZE}
         page={pageNumber}
         onPageChange={(p) => setPageNumber(p)}

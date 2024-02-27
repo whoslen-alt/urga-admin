@@ -237,7 +237,7 @@ function Feedback({ userToken }) {
         },
       });
       setRecords(res.data.data);
-      setTotal(res.data.pagination?.total);
+      setTotal(res.data.meta?.total);
       setLoading(false);
     } catch (e) {}
   };
@@ -335,7 +335,7 @@ function Feedback({ userToken }) {
         withBorder
         withColumnBorders
         records={records}
-        totalRecords={records?.length}
+        totalRecords={total}
         recordsPerPage={PAGE_SIZE}
         fetching={loading}
         page={page}

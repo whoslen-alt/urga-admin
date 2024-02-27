@@ -37,7 +37,7 @@ function Role({ users, total: totalRoles, userToken }) {
       }
     );
     setRecords(res.data.data);
-    setTotal(res.data.data.length);
+    setTotal(res.data.meta.total);
     setLoading(false);
   };
 
@@ -374,7 +374,7 @@ export const getServerSideProps = requireAuthentication(async ({ req, res }) => 
   return {
     props: {
       users: response.data.data,
-      //   total: response.data.data.length,
+      total: response.data.meta.total,
       userToken: req.cookies.urga_admin_user_jwt,
     },
   };
