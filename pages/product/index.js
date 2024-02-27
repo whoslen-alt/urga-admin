@@ -69,7 +69,7 @@ function Product({ userToken }) {
   const { data, isLoading } = useProducts(
     {
       limit: PAGE_SIZE,
-      offset: page - 1,
+      offset: (page - 1) * PAGE_SIZE,
       query: debounced,
       keys,
     },

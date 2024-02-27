@@ -67,7 +67,7 @@ function Invoice({ userToken }) {
       fromDate: dayjs(dates?.[0]).format(dateFormat),
       untilDate: dayjs(dates?.[1]).format(dateFormat),
       limit: PAGE_SIZE,
-      offset: page - 1,
+      offset: (page - 1) * PAGE_SIZE,
       keys,
     },
     userToken
